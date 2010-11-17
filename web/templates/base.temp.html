@@ -1,0 +1,10 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+    <head>{% block head %}<title>{% block title %}{% endblock %}</title>{% endblock %}</head>
+    <body>
+        <div id="content">{% block content %}{% endblock %}</div>
+        <div id="footer">{% block footer %}{% endblock %}</div>
+        {% block javascript %}<script type="text/javascript" src="js/jquery-1.4.3.min.js"></script>{% endblock %}
+    </body>
+</html>

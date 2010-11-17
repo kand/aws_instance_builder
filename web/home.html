@@ -1,0 +1,65 @@
+{% extends "templates/base.temp.html" %}
+{% block title %}AWS Server Monitor{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <button id="start_button" type="button">start</button> <button id="stop_button" type="button">stop</button>
+    Test: <input id="test_write_input" type="text" name="write"/>
+    <button id="test_write" type="button">write</button><br/><br/>
+    Server output (last update:<span id="last_update_time">00:00:00</span>)
+    <div id="console_section">
+    </div>  
+{% endblock %}
+{% block footer %}
+{% endblock %}
+{% block javascript %}
+    {{ super() }}
+    <script type="text/javascript">
+        var updateTimer = null;
+        
+        /* Gets the current status of the server, writes to server status
+            window.
+        */
+        function getStatus(){
+            $.ajax({
+                url:"getstatus",
+                type:"POST",
+                dataType:"html",
+                success: function(data){
+                    $("#console_section").append(data);
+                    var date = new Date();
+                    $("#last_update_time").html(date.getHours()+":"
+                        +date.getMinutes()+":"+date.getSeconds());
+                }
+            });
+        }
+    
+        window.onload = function(){
+            $("#start_button").click(function(){
+                if( updateTimer === null ){
+                    getStatus();
+                    updateTimer = setInterval("getStatus()",5000);
+                }
+            });
+            
+            $("#stop_button").click(function(){
+                if( updateTimer !== null ){
+                    clearTimeout(updateTimer);
+                    updateTimer = null;
+                }
+            });
+           
+            //for testing purposes, allows writing to server_status
+            $("#test_write").click(function(){
+                inputField = $("#test_write_input");
+                $.ajax({
+                    url:"writestatus",
+                    type:"POST",
+                    data:{write:inputField.val()}
+                });
+                inputField.val("");
+            });
+        }
+    </script>
+{% endblock %}
