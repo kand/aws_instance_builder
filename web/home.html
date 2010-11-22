@@ -7,7 +7,7 @@
     <button id="start_button" type="button">start</button> <button id="stop_button" type="button">stop</button>
     Test: <input id="test_write_input" type="text" name="write"/>
     <button id="test_write" type="button">write</button><br/><br/>
-    Server output (last update:<span id="last_update_time">00:00:00</span>)
+    Server output (last update:<span id="last_update_time">00:00:00</span> last line:<span id="last_line">-1</span>)
     <div id="console_section">
     </div>  
 {% endblock %}
@@ -17,6 +17,7 @@
     {{ super() }}
     <script type="text/javascript">
         var updateTimer = null;
+        var lastLine = -1;
         
         /* Gets the current status of the server, writes to server status
             window.
@@ -25,12 +26,15 @@
             $.ajax({
                 url:"getstatus",
                 type:"POST",
-                dataType:"html",
+                data:({lastLine:lastLine}),
+                dataType:"json",
                 success: function(data){
-                    $("#console_section").append(data);
                     var date = new Date();
+                    lastLine = data.lastLine;
+                    $("#console_section").append(data.lines);
                     $("#last_update_time").html(date.getHours()+":"
                         +date.getMinutes()+":"+date.getSeconds());
+                    $("#last_line").html(lastLine);
                 }
             });
         }

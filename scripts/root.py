@@ -1,4 +1,4 @@
-import os,sys
+import os,sys,random
 
 from quixote.publish import *
 from quixote.directory import Directory
@@ -29,15 +29,11 @@ class Root(Directory):
         return env.get_template("home.html").render()
 
     def getstatus(self):
-        return self.__status_file.readBuff()
+        return self.__status_file.readBuff(get_response(),get_request().get_field("lastLine"))
 
     #for debug
     def writestatus(self):
         self.__status_file.write(get_request().get_field("write"))
-
-#need a session manager for proper reading/writing to file
-#when server closes, that is the only time files should be wiped, so
-#   might never need to really truncate file
 
 #how can I sep into different directories????
 #   need one master directory that controls/provides access to other
