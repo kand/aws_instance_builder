@@ -1,7 +1,10 @@
 import json
 
 class JSONObject(object):
-    '''Provides interface for making objects that can be serialized into json'''
+    '''Provides interface for making objects that can be serialized into json.
+        
+        Note: This class is currently incomplete and only provides enough
+        functionality to be useful in a specific case.'''
     #def __init__(self):
     #    '''If inherited, will make getters/setters for each of the __json__ 
     #        variables in the object'''
@@ -21,9 +24,9 @@ class JSONObject(object):
         for v in vdict:
             if isinstance(vdict[v],int) or isinstance(vdict[v],float):
                 ret += '"%s":%s' % (v,str(vdict[v]))
-            elif isinstance(vdict[v],str):
+            elif isinstance(vdict[v],basestring):
                 ret += '"%s":%s' % (v,json.JSONEncoder() \
-                    .encode(repr(vdict[v]).strip("'")))
+                    .encode(repr(vdict[v]).lstrip("u'").strip("'")))
             ret += ","
         return ret.rstrip(",") + "}"
         

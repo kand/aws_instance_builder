@@ -26,6 +26,7 @@ class _Controller(object):
         self.__installThread = thread.start_new_thread(install_func,
             tuple([softwareList]))
         print("installer started...")
+        print("software to be installed:" + str(softwareList))
         
     def getStatusFile(self):
         return self.__statusFile

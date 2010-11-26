@@ -1,0 +1,15 @@
+Builds/runs and aws instance and reports back to the user through a web
+interface. Can be started by either importing start_instance_builder and
+calling start(host,port,softwareList) or from the command line with:
+
+$ python2.7 start_instance_builder.py <host> <port> <softwareList>
+
+where:
+            host - host to start server on
+            port - port to start server on
+    softwareList - no spaces, enclosed in brackets, comma separated list of 
+        software to install. (e.g. [software1,software2,software3]
+
+
+TODO:
+    -installer untested

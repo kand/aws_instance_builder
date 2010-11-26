@@ -53,7 +53,9 @@ class StatusIO(object):
             lastLine: the number of the current last line
             lines: all of the requested lines'''
         response.set_content_type("application/json")
-        if not isinstance(lastLine,int):
+        try:
+            lastLine = int(lastLine)
+        except ValueError:
             return StatusIOResponse(error="lastLine must be int").serialize()
         lb_len = len(self.__lineBuff)
         lines = ""
