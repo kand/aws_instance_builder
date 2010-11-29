@@ -13,13 +13,13 @@ class Installer(object):
         '''Used to install software on the server. Reports to statusIOobj to
             inform user of status.'''
         #write software to node.js
-        nodejs = open(NODEJS_PATH,"w")
+        nodejs = open(self.NODEJS_PATH,"w")
         nodejs.write('{ "run_list": [ %s ] }' 
             % ', '.join(['"recipe[%s]"' % s for s in softwareList]))
         nodejs.close()
         
         #execute chef-solo to install
-        command = ["chef-solo","-j",NODEJS_PATH,"-r",CHEF_REPO_LOCATION]
+        command = ["chef-solo","-j",self.NODEJS_PATH,"-r",CHEF_REPO_LOCATION]
         process = subprocess.Popen(command,stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
             

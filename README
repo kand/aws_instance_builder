@@ -8,7 +8,7 @@ where:
             host - host to start server on
             port - port to start server on
     softwareList - no spaces, enclosed in brackets, comma separated list of 
-        software to install. (e.g. [software1,software2,software3]
+        software to install. (e.g. [software1,software2,software3])
 
 
 TODO:
