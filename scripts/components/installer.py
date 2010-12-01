@@ -1,10 +1,11 @@
-import subprocess
-from controller import Controller
+import subprocess,os
+#from controller import Controller
 
 class Installer(object):
     '''Provides methods to install software on server'''
 
-    NODEJS_PATH = '/etc/chef/node.js'
+    NODEJS_DIR = '/etc/chef'
+    NODEJS_PATH = NODEJS_DIR + '/node.js'
     CHEF_REPO_LOCATION = 'http://lyorn.idyll.org/~nolleyal/chef/' \
         'chef-solo.tar.gz'
     
@@ -13,13 +14,15 @@ class Installer(object):
         '''Used to install software on the server. Reports to statusIOobj to
             inform user of status.'''
         #write software to node.js
-        nodejs = open(self.NODEJS_PATH,"w")
+        if not os.path.isdir(Installer.NODEJS_DIR):
+            os.mkdir(Installer.NODEJS_DIR)
+        nodejs = open(Installer.NODEJS_PATH,"w")
         nodejs.write('{ "run_list": [ %s ] }' 
             % ', '.join(['"recipe[%s]"' % s for s in softwareList]))
         nodejs.close()
         
         #execute chef-solo to install
-        command = ["chef-solo","-j",self.NODEJS_PATH,"-r",CHEF_REPO_LOCATION]
+        command = ["chef-solo","-j",Installer.NODEJS_PATH,"-r",Installer.CHEF_REPO_LOCATION]
         process = subprocess.Popen(command,stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
             
