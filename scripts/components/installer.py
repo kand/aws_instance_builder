@@ -1,5 +1,5 @@
 import subprocess,os
-#from controller import Controller
+from controller import Controller
 
 class Installer(object):
     '''Provides methods to install software on server'''
@@ -24,11 +24,11 @@ class Installer(object):
         #execute chef-solo to install
         command = ["chef-solo","-j",Installer.NODEJS_PATH,"-r",Installer.CHEF_REPO_LOCATION]
         process = subprocess.Popen(command,stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
+            stderr=subprocess.PIPE)
             
         #send output to status file
         while(process.poll() == None):
-            Controller().getStatusFile().write(process.stdin.read())
+            Controller().getStatusFile().write(process.stdout.read())
             Controller().getStatusFile().write(process.stderr.read())
 
 if __name__ == "__main__":
