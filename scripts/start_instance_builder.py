@@ -1,6 +1,7 @@
 import os,sys
 from components.webroot import create_publisher
 from components.installer import Installer
+from components.tester import Tester
 from controller import Controller
 
 def start(host,port,softwareList,test=False):
@@ -9,6 +10,7 @@ def start(host,port,softwareList,test=False):
         Controller().startInstaller(Installer.install,softwareList)
     else:
         print("running in test mode...")
+        Controller().startTester(Tester.test)
     
     while Controller().isAlive(): pass
     

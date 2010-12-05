@@ -56,7 +56,7 @@ class StatusIO(object):
         try:
             lastLine = int(lastLine)
         except ValueError:
-            return StatusIOResponse(error="lastLine must be int").serialize()
+            return StatusIOResponse(error="lastLine must be int\n").serialize()
         lb_len = len(self.__lineBuff)
         lines = ""
         if lastLine < 0:
@@ -68,7 +68,7 @@ class StatusIO(object):
                 for i in range(lastLine + 1,lb_len):
                     lines += self.__lineBuff[i]
             else:
-                return StatusIOResponse(error="lastLine refers to a location beyond EoF").serialize()
+                return StatusIOResponse(error="lastLine refers to a location beyond EoF\n").serialize()
         return StatusIOResponse(lastLine=lb_len-1,lines=lines).serialize()
 
     def getStatusFileLocation(self):

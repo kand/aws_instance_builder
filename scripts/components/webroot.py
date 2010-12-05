@@ -9,14 +9,16 @@ from controller import Controller
 
 HTML_DIR = "../web"
 JAVASCRIPT_DIR = "../web/js"
+CSS_DIR = "../web/css"
 OUTPUT_FILE = "../server_output"
 
 EXCEPTION_TYPE = "html"
 
 class Root(Directory):
-    _q_exports = ["","js","getstatus","writestatus"]
+    _q_exports = ["","css","js","getstatus","writestatus"]
 
     js = StaticDirectory(os.path.join(os.getcwd(),JAVASCRIPT_DIR))
+    css = StaticDirectory(os.path.join(os.getcwd(),CSS_DIR))
 
     def __init__(self):
         pass
@@ -28,10 +30,6 @@ class Root(Directory):
 
     def getstatus(self):
         return Controller().getStatusFile().readBuff(get_response(),get_request().get_field("lastLine"))
-
-    #for debug
-    def writestatus(self):
-        Controller().getStatusFile().write(get_request().get_field("write"))
 
 #how can I sep into different directories????
 #   need one master directory that controls/provides access to other

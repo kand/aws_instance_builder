@@ -2,68 +2,21 @@
 {% block title %}AWS Server Monitor{% endblock %}
 {% block head %}
     {{ super() }}
+    <link rel="stylesheet" type="text/css" href="css/home.css"></link>
 {% endblock %}
 {% block content %}
-    <button id="start_button" type="button">start</button> <button id="stop_button" type="button">stop</button>
-    Test: <input id="test_write_input" type="text" name="write"/>
-    <button id="test_write" type="button">write</button><br/><br/>
-    Server output (last update:<span id="last_update_time">00:00:00</span> last line:<span id="last_line">-1</span>)
+    <h1 id="vertex_logo">VERTEX</h1>
     <div id="console_section">
-    </div>  
+    	<div id="console_body"></div>
+    	<div id="console_footer">
+    		<span class="label">Last update at</span> <span id="last_update_time">00:00:00</span>
+    		<a id="start_button" href="#running">start</a> <a id="stop_button" href="#stopped">stop</a>
+    	</div>
+    </div>
 {% endblock %}
 {% block footer %}
 {% endblock %}
 {% block javascript %}
     {{ super() }}
-    <script type="text/javascript">
-        var updateTimer = null;
-        var lastLine = -1;
-        
-        /* Gets the current status of the server, writes to server status
-            window.
-        */
-        function getStatus(){
-            $.ajax({
-                url:"getstatus",
-                type:"POST",
-                data:({lastLine:lastLine}),
-                dataType:"json",
-                success: function(data){
-                    var date = new Date();
-                    lastLine = data.lastLine;
-                    $("#console_section").append(data.lines + data.error);
-                    $("#last_update_time").html(date.getHours() + ":"
-                        + date.getMinutes() + ":" + date.getSeconds());
-                    $("#last_line").html(lastLine);
-                }
-            });
-        }
-    
-        window.onload = function(){
-            $("#start_button").click(function(){
-                if( updateTimer === null ){
-                    getStatus();
-                    updateTimer = setInterval("getStatus()",5000);
-                }
-            });
-            
-            $("#stop_button").click(function(){
-                if( updateTimer !== null ){
-                    clearTimeout(updateTimer);
-                    updateTimer = null;
-                }
-            });
-           
-            //for testing purposes, allows writing to server_status
-            $("#test_write").click(function(){
-                inputField = $("#test_write_input");
-                $.ajax({
-                    url:"writestatus",
-                    type:"POST",
-                    data:{write:inputField.val()}
-                });
-                inputField.val("");
-            });
-        }
-    </script>
+    <script type="text/javascript" src="js/home.js"></script>
 {% endblock %}

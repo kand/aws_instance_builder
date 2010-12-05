@@ -12,6 +12,7 @@ class _Controller(object):
         self.__statusFile = StatusIO(self.__STATUS_FILE)
         self.__serverThread = None
         self.__installThread = None
+        self.__testThread = None
             
     def startServer(self,publish_func,host,port):
         '''Starts a new thread containing the web server component.'''
@@ -27,6 +28,11 @@ class _Controller(object):
             tuple([softwareList]))
         print("installer started...")
         print("software to be installed:" + str(softwareList))
+        
+    def startTester(self,tester_func):
+        '''Starts a new thread containing a test function.'''
+        self.__testThread = thread.start_new_thread(tester_func, tuple())
+        print("tester started...")
         
     def getStatusFile(self):
         return self.__statusFile
