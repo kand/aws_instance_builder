@@ -1,0 +1,41 @@
+body{
+	font-family:sans-serif;
+}
+
+#vertex_logo{
+	color:#c0c0c0;
+}
+#console_section{
+	margin:auto;
+	width:900px;
+}
+#console_body{
+	font-size:.8em;
+	border-bottom:10px solid #caef80;
+	border-top:10px solid #caef80;
+	overflow:auto;
+	height:350px;
+}
+	#console_section span.error{
+		color:#ff0000;
+	}
+	#console_section span.content_block{
+	}
+#console_footer{
+	color:#c0c0c0;
+	font-size:.6em;
+	margin-top:5px;
+}
+	#console_footer span.label{}
+	
+#start_button{
+	display:none;
+}	
+#stop_button{}
+
+#start_button:link,#stop_button:link,
+	#start_button:hover,#stop_button:hover,
+	#start_button:active,#stop_button:active,
+	#start_button:visited,#stop_button:visited{
+		color:#0000ff
+	}
