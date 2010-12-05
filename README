@@ -14,5 +14,6 @@ where:
 This script must be run with sudo since there are operations that need to
 be done with root permissions.
 
-TODO:
-    -installer untested
+Requires:
+  -Quixote web framework: http://www.quixote.ca/download.html
+  -Jinja2 templating: http://jinja.pocoo.org/intro/#installation
