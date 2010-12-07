@@ -7,10 +7,10 @@ from jinja2 import Environment,FileSystemLoader
 
 from controller import Controller
 
-HTML_DIR = "../web"
-JAVASCRIPT_DIR = "../web/js"
-CSS_DIR = "../web/css"
-OUTPUT_FILE = "../server_output"
+HTML_DIR = "aws_instance_builder/web"
+JAVASCRIPT_DIR = "aws_instance_builder/web/js"
+CSS_DIR = "aws_instance_builder/web/css"
+OUTPUT_FILE = "aws_instance_builder/server_output"
 
 EXCEPTION_TYPE = "html"
 
