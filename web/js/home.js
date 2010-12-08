@@ -27,6 +27,19 @@ function getStatus(){
             $("#console_body").append(consoleOutput);
             $("#last_update_time").html(date.getHours() + ":"
                 + date.getMinutes() + ":" + date.getSeconds());
+        },
+        error: function(){
+            var date = new Date();
+            
+            consoleOutput = "<span class='error'>Error: AJAX request failed. Stopping...</span><br/>";
+            $("#console_body").append(consoleOutput);
+            $("#last_update_time").html(date.getHours() + ":"
+                + date.getMinutes() + ":" + date.getSeconds());
+            
+            clearTimeout(updateTimer);
+            updateTimer = null;
+            $("#stop_button").hide();
+            $("#start_button").show();
         }
     });
 }
@@ -34,6 +47,18 @@ function getStatus(){
 $(document).ready(function(){
     getStatus();
     updateTimer = setInterval("getStatus()",5000);
+    
+    $("#console_tab_console").click(function(){
+    	$(this).addClass("active");
+    	$("#console_tab_monitor").removeClass("active");
+    });
+    
+    $("#console_tab_monitor").click(function(){
+    	$(this).addClass("active");
+    	$("#console_tab_console").removeClass("active");
+    	
+    	//show monitor
+    });
 
     $("#start_button").click(function(){
         if( updateTimer === null ){

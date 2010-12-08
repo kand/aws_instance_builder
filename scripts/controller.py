@@ -1,11 +1,16 @@
-import thread
+import thread,os
 
 from serverio.statusIO import *
 from quixote.server.simple_server import run
 
 class _Controller(object):
     '''Manages program resources, threads.'''
-    __STATUS_FILE = "../server_status"
+    __cDir = os.path.abspath(__file__).replace("controller.pyc","") \
+        .replace("controller.py","")
+    __STATUS_FILE =  os.path.join(__cDir,"../server_status")
+    __DIR_HTML = os.path.join(__cDir,"../web")
+    __DIR_JS = os.path.join(__DIR_HTML,"js")
+    __DIR_CSS = os.path.join(__DIR_HTML,"css")
     
     def __init__(self):
         self.__alive = True
@@ -36,6 +41,15 @@ class _Controller(object):
         
     def getStatusFile(self):
         return self.__statusFile
+    
+    def getHtmlDir(self):
+        return self.__DIR_HTML
+    
+    def getJsDir(self):
+        return self.__DIR_JS
+    
+    def getCssDir(self):
+        return self.__DIR_CSS
     
     def isAlive(self):
         '''If this is false, none of the threads are running anymore.'''

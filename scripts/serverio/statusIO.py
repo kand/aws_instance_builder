@@ -1,4 +1,3 @@
-import os
 from util.jsonObject import *
 
 class StatusIOResponse(JSONObject):

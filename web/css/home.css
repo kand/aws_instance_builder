@@ -10,11 +10,20 @@ body{
 	width:900px;
 }
 #console_section a.console_tab{
-	border: 1px solid #caef80;
 	padding: 0 .2em;
 	font-size:.9em;
 	cursor:pointer;
+	color:#ffffff;
+	background-color:#c0c0c0;
 }
+	#console_section a.console_tab.active{
+		padding: 0 .2em;
+		font-size:.9em;
+		cursor:pointer;
+		color:#000000;
+		background-color:#caef80;
+	}
+
 #console_body{
 	font-size:.8em;
 	border-bottom:10px solid #caef80;
