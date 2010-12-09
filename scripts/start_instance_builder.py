@@ -7,7 +7,7 @@ from components.tester import Tester
 def start(host,port,softwareList,piplineUrl,test=False):
     Controller().startThreading(WebRoot(host,port))
     if not test:
-        Controller().startThreading(Installer(softwareList))
+        Controller().startThreading(Installer(softwareList, pipelineUrl))
     else:
         Controller().startThreading(Tester())
     
@@ -26,7 +26,7 @@ def pusage():
     print("\t       -test - runs server without installing anything\n")
     
 if __name__ == "__main__":
-    if len(sys.argv) <= 5:
+    if len(sys.argv) < 5:
         pusage()
     else:
         host = sys.argv[1]
