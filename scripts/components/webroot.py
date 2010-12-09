@@ -1,13 +1,13 @@
 import os,sys,random
 
+from threading import Thread
 from quixote.publish import *
 from quixote.directory import Directory
 from quixote.util import StaticFile,StaticDirectory
+from quixote.server.simple_server import run
 from jinja2 import Environment,FileSystemLoader
 
 from controller import Controller
-
-EXCEPTION_TYPE = "html"
 
 class Root(Directory):
     _q_exports = ["","css","js","getstatus","writestatus"]
@@ -25,11 +25,22 @@ class Root(Directory):
     def getstatus(self):
         return Controller().getStatusFile().readBuff(get_response(),get_request().get_field("lastLine"))
 
-#how can I sep into different directories????
-#   need one master directory that controls/provides access to other
-#   directories
-def create_publisher():
-    return Publisher(Root(),display_exceptions=EXCEPTION_TYPE)
+class WebRoot(Thread):
+    '''Provides methods to start web server.'''
+    
+    EXCEPTION_TYPE = "html"
+    
+    def __init__(self,host,port):
+        Thread.__init__(self)
+        self.__host = host
+        self.__port = port
+    
+    def run(self):
+        print("server starting...\nlistening on %s:%i" % (self.__host,self.__port))
+        run(self.__create_publisher,host=self.__host,port=self.__port)
+        
+    def __create_publisher(self):
+        return Publisher(Root(),display_exceptions=self.EXCEPTION_TYPE)
 
 if __name__ == "__main__":
     pass

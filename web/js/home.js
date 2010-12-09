@@ -39,7 +39,7 @@ function getStatus(){
             clearTimeout(updateTimer);
             updateTimer = null;
             $("#stop_button").hide();
-            $("#start_button").show();
+            $("#start_button").show();   
         }
     });
 }
@@ -51,6 +51,8 @@ $(document).ready(function(){
     $("#console_tab_console").click(function(){
     	$(this).addClass("active");
     	$("#console_tab_monitor").removeClass("active");
+    	
+    	//show console
     });
     
     $("#console_tab_monitor").click(function(){
