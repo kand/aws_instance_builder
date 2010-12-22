@@ -1,11 +1,10 @@
 {% extends "templates/base.temp.html" %}
-{% block title %}AWS Server Monitor{% endblock %}
+{% block title %}{{ super() }} - Server Monitor{% endblock %}
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" type="text/css" href="css/home.css"></link>
 {% endblock %}
 {% block content %}
-    <h1 id="vertex_logo">VERTEX</h1>
     <div id="console_section">
     	<a id="console_tab_console" class="console_tab active">Console</a><a id="console_tab_monitor" class="console_tab">Monitor</a>
     	<div id="console_body"></div>

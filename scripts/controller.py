@@ -6,13 +6,16 @@ class _Controller(object):
     '''Manages program resources, threads.'''
     __cDir = os.path.abspath(__file__).replace("controller.pyc","") \
         .replace("controller.py","")
-    __STATUS_FILE =  os.path.join(__cDir,"../server_status")
+    
+    __DIR_RESOURCES = os.path.join(__cDir,"../resources")
     __DIR_HTML = os.path.join(__cDir,"../web")
     __DIR_JS = os.path.join(__DIR_HTML,"js")
     __DIR_CSS = os.path.join(__DIR_HTML,"css")
     
+    __DB_FILE = os.path.join(__DIR_RESOURCES,"db.sqlite")
+    
     def __init__(self):
-        self.__statusFile = StatusIO(self.__STATUS_FILE)
+        self.__statusIO = StatusIO(self.__DB_FILE)
         self.__threads = []
         
     def startThreading(self,threadInstance):
@@ -20,9 +23,6 @@ class _Controller(object):
         instantiated)'''
         threadInstance.start()
         self.__threads.append(threadInstance)
-        
-    def getStatusFile(self):
-        return self.__statusFile
     
     def getHtmlDir(self):
         return self.__DIR_HTML
@@ -42,6 +42,9 @@ class _Controller(object):
         for t in self.__threads:
             alive = alive and t.isAlive()
         return alive
+    
+    def getStatusIO(self):
+        return self.__statusIO
     
 _controller = _Controller()
     

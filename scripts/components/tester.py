@@ -12,10 +12,11 @@ class Tester(Thread):
     def run(self):
         print("running tester...")
         
-        random_text = ["some random string of information\n"]
+        random_text = ["some random string of information\n","some\n",
+                       "other\n","string\n","to\n","write\n"]
         
         while 1:            
-            Controller().getStatusFile() \
+            Controller().getStatusIO() \
                 .write(random_text[random.randint(0,len(random_text)-1)])
             time.sleep(random.randint(1,10))
             

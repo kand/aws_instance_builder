@@ -1,5 +1,5 @@
 var dateTimer = null;
-var lastLine = -1;
+var lastLine = 0;
 
 /* Replace any characters from output with html tags for formatting */
 function charReplace(server_output){

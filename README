@@ -1,6 +1,7 @@
 Builds/runs and aws instance and reports back to the user through a web
 interface. Can be started by either importing start_instance_builder and
-calling start(host,port,softwareList) or from the command line with:
+calling start(host,port,softwareList,pipelineUrl,test) or from the command 
+line with:
 
 $ sudo python2.7 start_instance_builder.py <host> <port> <softwareList> <pipelineUrl> [-test]
 
