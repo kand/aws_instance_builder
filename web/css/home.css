@@ -1,49 +1,67 @@
-#console_section{
-	margin:auto;
-	width:900px;
+#nav_bar{
 }
-#console_section a.console_tab{
+#nav_bar .tab{
 	padding: 0 .2em;
 	font-size:.9em;
 	cursor:pointer;
 	color:#ffffff;
 	background-color:#c0c0c0;
 }
-	#console_section a.console_tab.active{
-		padding: 0 .2em;
-		font-size:.9em;
-		cursor:pointer;
-		color:#000000;
-		background-color:#caef80;
-	}
+#nav_bar .active{
+	padding: 0 .2em;
+	font-size:.9em;
+	cursor:pointer;
+	color:#000000;
+	background-color:#caef80;
+}
 
-#console_body{
+div.content_section{
+	display:none;
 	font-size:.8em;
 	border-bottom:10px solid #caef80;
 	border-top:10px solid #caef80;
 	overflow:auto;
 	height:350px;
 }
-	#console_section span.error{
-		color:#ff0000;
-	}
-	#console_section span.content_block{
-	}
-#console_footer{
+
+#console_section{
+	display:block;
+}
+#console_section .error{
+	color:#ff0000;
+}
+#console_section .content_block{
+}
+
+#monitor_section{
+	padding:10px;
+}
+#monitor_section h3{
+	margin:0;
+}
+#monitor_section .label{
+	width:50px;
+	display:inline-block;
+	text-align:right;
+}
+#monitor_section .value{
+}
+
+#content_footer{
 	color:#c0c0c0;
 	font-size:.6em;
 	margin-top:5px;
 }
-	#console_footer span.label{}
+#content_footer span.label{}
 	
 #start_button{
 	display:none;
 }	
-#stop_button{}
+#stop_button{
+}
 
-#start_button:link,#stop_button:link,
-	#start_button:hover,#stop_button:hover,
-	#start_button:active,#stop_button:active,
-	#start_button:visited,#stop_button:visited{
-		color:#0000ff
-	}
+#start_button,#stop_button{
+	text-decoration:underline;
+	color:#0000ff;
+	cursor:pointer;
+}
