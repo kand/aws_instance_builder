@@ -33,7 +33,7 @@ class Installer(Thread):
         #execute chef-solo to install
         command = ["chef-solo","-j",Installer.NODEJS_PATH,"-r",Installer.CHEF_REPO_LOCATION]
         process = subprocess.Popen(command,stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+                                   stderr=subprocess.PIPE)
             
         #send output to status file
         while(process.poll() == None):
