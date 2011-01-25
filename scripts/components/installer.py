@@ -37,6 +37,8 @@ class Installer(Thread):
         while(process.poll() == None):
             Controller().getStatusIO().write(process.stdout.read())
             Controller().getStatusIO().write(process.stderr.read())
-
+            
+        Controller().getStatusIO().write("installer complete.")
+        
 if __name__ == "__main__":
     pass
