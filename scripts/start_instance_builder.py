@@ -12,7 +12,7 @@ def start(host,port,softwareList,piplineUrl,test=False):
         Controller().startThreading(i)
     
         #wait for installer to finish and start pipeline
-        while i.isAlive(): Controller().getStatusIO().write("still alive")
+        while i.isAlive(): pass
         Controller().startThreading(Pipeline(self.__pipelineUrl))
     else:
         Controller().startThreading(Tester())
