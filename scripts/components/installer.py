@@ -37,8 +37,10 @@ class Installer(Thread):
             
         #send output to status file
         while(process.poll() == None):
-            Controller().getStatusFile().write(process.stdout.read())
-            Controller().getStatusFile().write(process.stderr.read())
+            Controller().getStatusIO().write(process.stdout.read())
+            Controller().getStatusIO().write(process.stderr.read())
+            
+        Controller().startThreading(Pipeline(self.__pipelineUrl))
 
 if __name__ == "__main__":
     pass

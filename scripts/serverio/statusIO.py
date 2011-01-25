@@ -1,6 +1,9 @@
 from util.jsonObject import *
 from util.dbAccess import *
 
+#note: on response, sometimes a IOError Broken Pipe will occur, which prevents
+#    data from being sent to the client properly... What causes this???
+
 class StatusIOResponse(JSONObject):
     def __init__(self,error="",lastLine=-1,lines=""):
         self.__json__error = error
