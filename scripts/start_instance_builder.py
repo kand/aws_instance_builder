@@ -3,14 +3,20 @@ from controller import Controller
 from components.webroot import WebRoot
 from components.installer import Installer
 from components.tester import Tester
+from components.pipeline import Pipeline
 
 def start(host,port,softwareList,piplineUrl,test=False):
     Controller().startThreading(WebRoot(host,port))
     if not test:
-        Controller().startThreading(Installer(softwareList, pipelineUrl))
+        i = Installer(softwareList)
+        Controller().startThreading(i)
+    
+        #wait for installer to finish and start pipeline
+        while i.isAlive(): pass
+        Controller().startThreading(Pipeline(self.__pipelineUrl))
     else:
         Controller().startThreading(Tester())
-    
+        
     while Controller().isAlive(): pass
     
 def pusage():
