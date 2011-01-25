@@ -10,6 +10,7 @@ class Installer(Thread):
     NODEJS_PATH = NODEJS_DIR + '/node.js'
     CHEF_REPO_LOCATION = 'http://lyorn.idyll.org/~nolleyal/chef/' \
         'chef-solo.tar.gz'
+    SIG_KEY = "installer_complete"
         
     def __init__(self,softwareList):
         Thread.__init__(self)
@@ -18,8 +19,8 @@ class Installer(Thread):
     def run(self):
         '''Used to install software on the server. Reports to statusIOobj to
             inform user of status. Starts pipeline once install complete'''
-        print("installer started...")
-            
+        Controller.getSignals()[SIG_KEY] = False
+        
         #write software to node.js
         if not os.path.isdir(Installer.NODEJS_DIR):
             os.mkdir(Installer.NODEJS_DIR)
@@ -38,7 +39,7 @@ class Installer(Thread):
             Controller().getStatusIO().write(process.stdout.read())
             Controller().getStatusIO().write(process.stderr.read())
             
-        Controller().getStatusIO().write("installer complete.")
+        Controller().getSignals()[SIG_KEY] = True
         
 if __name__ == "__main__":
     pass

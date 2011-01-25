@@ -17,6 +17,7 @@ class _Controller(object):
     def __init__(self):
         self.__statusIO = StatusIO(self.__DB_FILE)
         self.__threads = []
+        self.__signals = {}
         
     def startThreading(self,threadInstance):
         '''Starts thread class threadInstance (which must already be 
@@ -35,6 +36,9 @@ class _Controller(object):
     
     def getThreads(self):
         return tuple(self.__threads)
+    
+    def getSignals(self,name):
+        return self.__signals
     
     def isAlive(self):
         '''If this is false, none of the threads are running anymore.'''

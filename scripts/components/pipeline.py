@@ -5,12 +5,16 @@ from controller import Controller
 
 class Pipeline(Thread):
     '''Provides methods to run/use pipelines.'''
+    
+    SIG_KEY = "pipeline_complete"
+    
     def __init__(self,pipelineUrl):
         Thread.__init__(self)
         self.__pipelineUrl = pipelineUrl
     
     def run(self):
         '''Start a pipeline downloaded from pipelineUrl.'''
+        Controller().getSignals()[SIG_KEY] = False
         Controller().getStatusIO().write("Pipeline located at '%s' started" \
                                          % self.__pipelineUrl)
         #copy pipeline into current directory
@@ -37,6 +41,8 @@ class Pipeline(Thread):
         while(process.poll() == None):
             Controller().getStatusIO().write(process.stdout.read())
             Controller().getStatusIO().write(process.stderr.read())
+        
+        Controller().getSignals()[SIG_KEY] = True
     
 if __name__ == "__main__":
     pass
