@@ -14,7 +14,7 @@ class Pipeline(Thread):
     
     def run(self):
         '''Start a pipeline downloaded from pipelineUrl.'''
-        Controller().getSignals()[SIG_KEY] = False
+        Controller().getSignals()[self.SIG_KEY] = False
         Controller().getStatusIO().write("Pipeline located at '%s' started" \
                                          % self.__pipelineUrl)
         #copy pipeline into current directory
@@ -28,12 +28,12 @@ class Pipeline(Thread):
             Controller().getStatusIO().write(process.stderr.read())
             
         #make pipeline executable
-        command = ["chmod","400","pipeline_script"]
+        command = ["chmod","+x","pipeline_script"]
         process = subprocess.Popen(command)
         while(process.poll() == None): pass
         
         #execute pipeline script
-        command = ["sudo ./pipeline_script"]
+        command = ["sudo","./pipeline_script"]
         process = subprocess.Popen(command,stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         
@@ -42,7 +42,7 @@ class Pipeline(Thread):
             Controller().getStatusIO().write(process.stdout.read())
             Controller().getStatusIO().write(process.stderr.read())
         
-        Controller().getSignals()[SIG_KEY] = True
+        Controller().getSignals()[self.SIG_KEY] = True
     
 if __name__ == "__main__":
     pass

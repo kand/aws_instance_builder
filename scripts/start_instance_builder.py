@@ -12,8 +12,8 @@ def start(host,port,softwareList,piplineUrl,test=False):
         Controller().startThreading(i)
     
         #wait for installer to finish and start pipeline
-        while not i.getSignals()[Installer.SIG_KEY]: pass
-        Controller().startThreading(Pipeline(self.__pipelineUrl))
+        while not Controller().getSignals()[Installer.SIG_KEY]: pass
+        Controller().startThreading(Pipeline(pipelineUrl))
     else:
         Controller().startThreading(Tester())
         

@@ -37,7 +37,7 @@ class _Controller(object):
     def getThreads(self):
         return tuple(self.__threads)
     
-    def getSignals(self,name):
+    def getSignals(self):
         return self.__signals
     
     def isAlive(self):

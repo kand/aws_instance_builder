@@ -19,7 +19,7 @@ class Installer(Thread):
     def run(self):
         '''Used to install software on the server. Reports to statusIOobj to
             inform user of status. Starts pipeline once install complete'''
-        Controller.getSignals()[SIG_KEY] = False
+        Controller().getSignals()[self.SIG_KEY] = False
         
         #write software to node.js
         if not os.path.isdir(Installer.NODEJS_DIR):
@@ -39,7 +39,7 @@ class Installer(Thread):
             Controller().getStatusIO().write(process.stdout.read())
             Controller().getStatusIO().write(process.stderr.read())
             
-        Controller().getSignals()[SIG_KEY] = True
+        Controller().getSignals()[self.SIG_KEY] = True
         
 if __name__ == "__main__":
     pass
