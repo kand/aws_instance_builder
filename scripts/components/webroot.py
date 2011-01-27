@@ -7,7 +7,7 @@ from quixote.util import StaticFile,StaticDirectory
 from quixote.server.simple_server import run
 from jinja2 import Environment,FileSystemLoader
 
-from controller import Controller
+from controller import Controller,redirectExceptions
 
 class Root(Directory):
     _q_exports = ["","css","js","getstatus","monitor"]
@@ -26,7 +26,7 @@ class Root(Directory):
         return self.__j2env.get_template("home.html").render()
 
     def getstatus(self):
-        return Controller().getStatusIO().read(get_response(),get_request().get_field("lastLine"))
+        return Controller().sread(get_response(),get_request().get_field("lastLine"))
 
 class WebRoot(Thread):
     '''Provides methods to start web server.'''
@@ -38,6 +38,7 @@ class WebRoot(Thread):
         self.__host = host
         self.__port = port
     
+    @redirectExceptions
     def run(self):
         print("server starting...")
         print("listening on %s:%i" % (self.__host,self.__port))

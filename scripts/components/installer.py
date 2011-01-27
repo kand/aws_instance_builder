@@ -1,7 +1,7 @@
 import subprocess,os
 
 from threading import Thread
-from controller import Controller
+from controller import Controller,redirectExceptions
 
 class Installer(Thread):
     '''Provides methods to install software on server'''
@@ -16,6 +16,7 @@ class Installer(Thread):
         Thread.__init__(self)
         self.__softwareList = softwareList
     
+    @redirectExceptions
     def run(self):
         '''Used to install software on the server. Reports to statusIOobj to
             inform user of status. Starts pipeline once install complete'''
@@ -36,8 +37,8 @@ class Installer(Thread):
             
         #redirect output to website
         while(process.poll() == None):
-            Controller().getStatusIO().write(process.stdout.read())
-            Controller().getStatusIO().write(process.stderr.read())
+            Controller().swrite(process.stdout.read())
+            Controller().swrite(process.stderr.read())
             
         Controller().getSignals()[self.SIG_KEY] = True
         

@@ -3,6 +3,10 @@ from util.dbAccess import *
 
 #note: on response, sometimes a IOError Broken Pipe will occur, which prevents
 #    data from being sent to the client properly... What causes this???
+#note2: error occurs when a program is putting a lot of output where DB reads
+#    and writes are occuring at the same time, this causes some issues
+
+#the solution might be: www.sqlalchemy.org
 
 class StatusIOResponse(JSONObject):
     def __init__(self,error="",lastLine=-1,lines=""):
@@ -27,17 +31,29 @@ class StatusIO(object):
     '''Provides methods to read/write to server status db table.'''
     
     __DB_TABLE_STATUS = "status"
+    __MAX_LINE_OUTPUT = 100     #specifies the maximum number of lines that should
+                                #    be sent to client. This will prevent issues
+                                #    where a program has output more lines than
+                                #    can be properly be sent across the network
     
     def __init__(self,dbPath):
         self.__dbPath = dbPath
         
     def write(self,text):
-        '''Writes specified text to db.'''
+        '''Writes specified text to db and console.'''
         dba = DbAccess(self.__dbPath)
-        sql = "INSERT INTO " + self.__DB_TABLE_STATUS + " (value) VALUES (:text)"
-        params = {"text":text}
         
-        dba.execute(sql,True,params)
+        vals = text.split("\n")
+        pcount = 0
+        for s in vals:
+            if len(s) > 0:
+                sql = "INSERT INTO " + self.__DB_TABLE_STATUS + "(value) VALUES ("
+                key = "line%i" % pcount
+                sql += ":%s" % key
+                sql += ")"
+            
+                dba.execute(sql,True,{key:"%s\n" % s})
+        
         dba.closeConn()
         
     def read(self,response,lastLine):
@@ -64,7 +80,7 @@ class StatusIO(object):
         lines = ""
         dba = DbAccess(self.__dbPath)
         sql = "SELECT id,value FROM " + self.__DB_TABLE_STATUS \
-            + " WHERE id > :lastLine"
+            + " WHERE id > :lastLine LIMIT " + str(self.__MAX_LINE_OUTPUT)
         params = {"lastLine":lastLine}
             
         c = dba.execute(sql,False,params)

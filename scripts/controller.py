@@ -1,4 +1,4 @@
-import thread,os
+import thread,os,traceback
 
 from serverio.statusIO import *
 
@@ -47,9 +47,35 @@ class _Controller(object):
             alive = alive and t.isAlive()
         return alive
     
-    def getStatusIO(self):
-        return self.__statusIO
+    def __dbr(self):
+        return self.__signals[self.__DB_R_SIG_KEY]
+    
+    def __dbw(self):
+        return self.__signals[self.__DB_W_SIG_KEY]
+    
+    def swrite(self,text):
+        '''Hand text to statusIO and write to console.'''
+        print("[SUBPROCESS] %s" % text)
+        self.__statusIO.write(str(text))
+        
+    def sread(self,response,lastLine):
+        '''Read text from statusIO.'''
+        return self.__statusIO.read(response,lastLine)
     
 _controller = _Controller()
     
 def Controller(): return _controller
+
+def redirectExceptions(f):
+    '''Function decorator to catch thread exceptions and print to main output.
+    This decorator should be put before all run() functions in threads that
+    are to be threaded through Controller. This makes error catching a lot
+    easier.'''
+    def wrap(self,*args,**kwargs):
+        try:
+           return f(self,*args,**kwargs)
+        except:
+           Controller().swrite(traceback.print_exc())
+           return None
+    return wrap
+    
