@@ -19,7 +19,7 @@ class Pipeline(Thread):
     def run(self):
         '''Start a pipeline downloaded from pipelineUrl.'''
         Controller().getSignals()[self.SIG_KEY] = False
-        Controller().swrite("Pipeline located at '%s' started" \
+        Controller().swrite("Pipeline located at '%s', downloading..." \
                                          % self.__pipelineUrl)
         #copy pipeline into current directory
         command = ["wget","-O",self.__PIPELINE_FILE_NAME,self.__pipelineUrl]

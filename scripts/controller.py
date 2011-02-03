@@ -1,6 +1,7 @@
 import thread,os,traceback
 
 from serverio.statusIO import *
+from util.dbAccess import *
 
 class _Controller(object):
     '''Manages program resources, threads.'''
@@ -15,6 +16,11 @@ class _Controller(object):
     __DB_FILE = os.path.join(__DIR_RESOURCES,"db.sqlite")
     
     def __init__(self):
+        #clear database before writing to it
+        dba = DbAccess(self.__DB_FILE)
+        dba.executeFromFile(os.path.join(self.__DIR_RESOURCES, "sql/clearDb.sql"))
+        dba.closeConn()
+        
         self.__statusIO = StatusIO(self.__DB_FILE)
         self.__threads = []
         self.__signals = {}

@@ -39,6 +39,14 @@ class DbAccess(object):
             self.closeCursor()
         else:
             return self.__cursor
+        
+    def executeFromFile(self,sqlPath,nonQuery=False,params={}):
+        '''Run sql from a file at sqlPath with specified params.'''
+        f = open(sqlPath,"r")
+        sql = f.read()
+        f.close()
+        
+        self.execute(sql,nonQuery,params)
     
 if __name__ == "__main__":
     pass

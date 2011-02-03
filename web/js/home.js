@@ -1,6 +1,6 @@
 /* Replace any characters from output with html tags for formatting */
 function charReplace(server_output){
-	return server_output.replace(/\\n/g,"<br/>");
+	return server_output.replace(/\\n/g,"<br/>").replace(/\\'/g,"'");
 }
         
 /* Gets the current status of the server, writes to server status to window */
