@@ -1,7 +1,6 @@
 import thread,os,traceback
 
 from serverio.statusIO import *
-from util.dbAccess import *
 
 class _Controller(object):
     '''Manages program resources, threads.'''
@@ -16,12 +15,7 @@ class _Controller(object):
     __DB_FILE = os.path.join(__DIR_RESOURCES,"db.sqlite")
     
     def __init__(self):
-        #clear database before writing to it
-        dba = DbAccess(self.__DB_FILE)
-        dba.executeFromFile(os.path.join(self.__DIR_RESOURCES, "sql/clearDb.sql"))
-        dba.closeConn()
-        
-        self.__statusIO = StatusIO(self.__DB_FILE)
+        self.__statusIO = StatusIO(self.__DB_FILE,self.__DIR_RESOURCES)
         self.__threads = []
         self.__signals = {}
         
@@ -30,6 +24,9 @@ class _Controller(object):
         instantiated)'''
         threadInstance.start()
         self.__threads.append(threadInstance)
+        
+    def getResDir(self):
+        return self.__DIR_RESOURCES
     
     def getHtmlDir(self):
         return self.__DIR_HTML
@@ -52,12 +49,6 @@ class _Controller(object):
         for t in self.__threads:
             alive = alive and t.isAlive()
         return alive
-    
-    def __dbr(self):
-        return self.__signals[self.__DB_R_SIG_KEY]
-    
-    def __dbw(self):
-        return self.__signals[self.__DB_W_SIG_KEY]
     
     def swrite(self,text):
         '''Hand text to statusIO and write to console.'''

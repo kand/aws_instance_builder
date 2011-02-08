@@ -1,12 +1,7 @@
+import os
+
 from util.jsonObject import *
 from util.dbAccess import *
-
-#note: on response, sometimes a IOError Broken Pipe will occur, which prevents
-#    data from being sent to the client properly... What causes this???
-#note2: error occurs when a program is putting a lot of output where DB reads
-#    and writes are occuring at the same time, this causes some issues
-
-#the solution might be: www.sqlalchemy.org
 
 class StatusIOResponse(JSONObject):
     def __init__(self,error="",lastLine=-1,lines=""):
@@ -36,7 +31,11 @@ class StatusIO(object):
                                 #    where a program has output more lines than
                                 #    can be properly be sent across the network
     
-    def __init__(self,dbPath):
+    def __init__(self,dbPath,resourcesDir):
+        #clear database before use
+        dba = DbAccess(dbPath)
+        dba.executeFromFile(os.path.join(resourcesDir, "sql/clearDb.sql"))
+        dba.closeConn()
         self.__dbPath = dbPath
         
     def write(self,text):
@@ -46,13 +45,12 @@ class StatusIO(object):
         vals = text.split("\n")
         pcount = 0
         for s in vals:
-            if len(s) > 0:
-                sql = "INSERT INTO " + self.__DB_TABLE_STATUS + "(value) VALUES ("
-                key = "line%i" % pcount
-                sql += ":%s" % key
-                sql += ")"
+            sql = "INSERT INTO " + self.__DB_TABLE_STATUS + "(value) VALUES ("
+            key = "line%i" % pcount
+            sql += ":%s" % key
+            sql += ")"
             
-                dba.execute(sql,True,{key:"%s\n" % s})
+            dba.execute(sql,True,{key:"%s\n" % s})
         
         dba.closeConn()
         

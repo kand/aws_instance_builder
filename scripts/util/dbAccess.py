@@ -6,7 +6,6 @@ class DbAccess(object):
     def __init__(self,dbPath):
         self.__db = dbPath
         self.__conn = None
-        self.__cursor = None
         
     def openConn(self):
         '''Open db connection to db at dbPath.'''
@@ -15,30 +14,20 @@ class DbAccess(object):
             
     def closeConn(self):
         '''Commit changes, close current db connection and cursor.'''
-        self.closeCursor()
         if self.__conn is not None:
             self.__conn.commit()
             self.__conn.close()
             self.__conn = None
-            
-    def closeCursor(self):
-        '''Close cursor if open.'''
-        if self.__cursor is not None:
-            self.__cursor.close()
-            self.__cursor = None
         
     def execute(self,sql,nonQuery=False,params={}):
         '''Execute sql on database, nonQuery True will execute sql without
-        returning any results, otherwise function returns cursor.'''
+        returning any results, otherwise function returns rows.'''
         self.openConn()
-        
-        self.__cursor = self.__conn.cursor()
-        self.__cursor.execute(sql,params)
-        
+        rows = self.__conn.execute(sql,params)
         if nonQuery:
-            self.closeCursor()
+            self.__conn.commit()
         else:
-            return self.__cursor
+            return rows
         
     def executeFromFile(self,sqlPath,nonQuery=False,params={}):
         '''Run sql from a file at sqlPath with specified params.'''
