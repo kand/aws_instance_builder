@@ -33,18 +33,17 @@ div.content_section{
 #console_section .content_block{
 }
 
-#monitor_section{
+#outputFiles_section{
 	padding:10px;
 }
-#monitor_section h3{
-	margin:0;
+#outputFiles_section ol{
+	list-style-type:none;
 }
-#monitor_section .label{
-	width:50px;
-	display:inline-block;
-	text-align:right;
+#outputFiles_section li{
 }
-#monitor_section .value{
+#outputFiles_section a.file_link{
+}
+#outputFiles_section div.file_description{
 }
 
 #content_footer{

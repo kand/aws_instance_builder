@@ -1,4 +1,4 @@
-import subprocess,os
+import subprocess,os,urllib
 
 from threading import Thread
 from controller import Controller,redirectExceptions
@@ -6,7 +6,6 @@ from controller import Controller,redirectExceptions
 class Pipeline(Thread):
     '''Provides methods to run/use pipelines.'''
     
-    __PIPELINE_DL_ERROR_MSG = "[ERROR] Pipeline script was not properly downloaded."
     __PIPELINE_FILE_NAME = "pipeline_script"
     
     SIG_KEY = "pipeline_complete"
@@ -21,25 +20,21 @@ class Pipeline(Thread):
         Controller().getSignals()[self.SIG_KEY] = False
         Controller().swrite("Pipeline located at '%s', downloading..." \
                                          % self.__pipelineUrl)
+        
         #copy pipeline into current directory
-        command = ["wget","-O",self.__PIPELINE_FILE_NAME,self.__pipelineUrl]
-        process = subprocess.Popen(command,stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        
-        #redirect wget output to website
-        while(process.poll() == None):
-            Controller().swrite(process.stdout.read())
-            Controller().swrite(process.stderr.read())
-        
-        #make sure pipeline was properly downloaded
         try:
-            open(self.__PIPELINE_FILE_NAME)
+            pulr = urllib.urlopen(self.__pipelineUrl)
         except IOError:
-            Controller().swrite(self.__PIPELINE_DL_ERROR_MSG)
+            Controller().swrite("[ERROR] Pipeline not found at url.")
             return
+            
+        f = open(self.__PIPELINE_FILE_NAME,"w")
+        f.write(pulr.read())
+        f.close()
+        pulr.close()
         
         if os.path.getsize(self.__PIPELINE_FILE_NAME) < 1:
-            Controller().swrite(self.__PIPELINE_DL_ERROR_MSG)
+            Controller().swrite("[ERROR] Pipeline script was not properly downloaded.")
             return
             
         #make pipeline executable
@@ -56,8 +51,8 @@ class Pipeline(Thread):
         
         #redirect output to website
         while(process.poll() == None):
-            Controller().swrite(process.stdout.read())
-            Controller().swrite(process.stderr.read())
+            Controller().swrite("[PIPELINE] %s" % process.stdout.read())
+            Controller().swrite("[PIPELINE] %s" % process.stderr.read())
         
         Controller().getSignals()[self.SIG_KEY] = True
     

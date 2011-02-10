@@ -7,6 +7,8 @@ function charReplace(server_output){
 var updateTimer = null;
 var lastLine = 0;
 function getStatus(){
+	//maybe here put another ajax request for any new files
+	
     $.ajax({
         url:"getstatus",
         type:"POST",

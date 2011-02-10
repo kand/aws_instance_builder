@@ -6,9 +6,18 @@
 {% endblock %}
 {% block content %}
 	<div id="nav_bar">
-		<a id="nav_tab_console" class="tab active">Console</a>
+		<a id="nav_tab_console" class="tab active">Console</a> <a id="nav_tab_outputFiles" class="tab">Output Files</a>
 	</div>
 	<div id="console_section" class="content_section"></div>
+	<div id="outputFiles_section" class="content_section">
+		<p>Pipelines will list any files they have produced here:</p>
+		<ol>
+			<li id="file_0">
+				<a id="file_0_link" class="file_link" href="output/test.txt">this is file 1</a>
+				<div id="file_0_desc" class="file_description">Here is a file description...</div>
+			</li>
+		</ol>
+	</div>
 	<div id="content_footer">
 		<span class="label">Last update at</span> <span id="last_update_time">00:00:00</span>
     	<span id="start_button">start</span><span id="stop_button">stop</span>

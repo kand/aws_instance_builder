@@ -1,6 +1,7 @@
 import thread,os,traceback
 
 from serverio.statusIO import *
+from serverio.fileChecker import *
 
 class _Controller(object):
     '''Manages program resources, threads.'''
@@ -11,11 +12,13 @@ class _Controller(object):
     __DIR_HTML = os.path.join(__cDir,"../web")
     __DIR_JS = os.path.join(__DIR_HTML,"js")
     __DIR_CSS = os.path.join(__DIR_HTML,"css")
+    __DIR_FILEOUTPUT = os.path.join(__DIR_HTML,"output")
     
     __DB_FILE = os.path.join(__DIR_RESOURCES,"db.sqlite")
     
     def __init__(self):
         self.__statusIO = StatusIO(self.__DB_FILE,self.__DIR_RESOURCES)
+        self.__fileCheck = fileChecker(self.__DIR_FILEOUTPUT)
         self.__threads = []
         self.__signals = {}
         
@@ -36,6 +39,9 @@ class _Controller(object):
     
     def getCssDir(self):
         return self.__DIR_CSS
+    
+    def getFileOutDir(self):
+        return self.__DIR_FILEOUTPUT
     
     def getThreads(self):
         return tuple(self.__threads)
@@ -58,6 +64,10 @@ class _Controller(object):
     def sread(self,response,lastLine):
         '''Read text from statusIO.'''
         return self.__statusIO.read(response,lastLine)
+    
+    def checkFiles(self,response,lastFileId):
+        '''Check output directory for new files.'''
+        return self.__fileCheck.checkFiles(response,lastFileId)
     
 _controller = _Controller()
     

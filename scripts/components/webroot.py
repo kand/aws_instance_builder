@@ -10,10 +10,11 @@ from jinja2 import Environment,FileSystemLoader
 from controller import Controller,redirectExceptions
 
 class Root(Directory):
-    _q_exports = ["","css","js","getstatus","monitor"]
+    _q_exports = ["","css","js","output","getstatus","getfiles","monitor"]
 
     js = StaticDirectory(Controller().getJsDir())
     css = StaticDirectory(Controller().getCssDir())
+    output = StaticDirectory(Controller().getFileOutDir())
     __j2env = Environment(loader=FileSystemLoader(Controller().getHtmlDir()))
 
     def __init__(self):
@@ -27,6 +28,9 @@ class Root(Directory):
 
     def getstatus(self):
         return Controller().sread(get_response(),get_request().get_field("lastLine"))
+
+    def getfiles(self):
+        return Controller(get_response(),get_request().get_field("lastFileId"))
 
 class WebRoot(Thread):
     '''Provides methods to start web server.'''
