@@ -3,6 +3,8 @@ import thread,os,traceback
 from serverio.statusIO import *
 from serverio.fileChecker import *
 
+from util.dbAccess import *
+
 class _Controller(object):
     '''Manages program resources, threads.'''
     __cDir = os.path.abspath(__file__).replace("controller.pyc","") \
@@ -17,8 +19,18 @@ class _Controller(object):
     __DB_FILE = os.path.join(__DIR_RESOURCES,"db.sqlite")
     
     def __init__(self):
+        #clear database before use
+        dba = DbAccess(self.__DB_FILE)
+        dba.executeFromFile(os.path.join(self.__DIR_RESOURCES, "sql/clearDb.sql"))
+        dba.closeConn()
+        
+        #make sure output folder exists
+        if not os.path.isdir(self.__DIR_FILEOUTPUT):
+            print("Creating output directory...")
+            os.mkdir(self.__DIR_FILEOUTPUT)
+        
         self.__statusIO = StatusIO(self.__DB_FILE,self.__DIR_RESOURCES)
-        self.__fileCheck = fileChecker(self.__DIR_FILEOUTPUT)
+        self.__fileCheck = fileChecker(self.__DIR_FILEOUTPUT,self.__DB_FILE)
         self.__threads = []
         self.__signals = {}
         
@@ -49,6 +61,9 @@ class _Controller(object):
     def getSignals(self):
         return self.__signals
     
+    def getFileChecker(self):
+        return self.__fileCheck
+    
     def isAlive(self):
         '''If this is false, none of the threads are running anymore.'''
         alive = True
@@ -65,9 +80,9 @@ class _Controller(object):
         '''Read text from statusIO.'''
         return self.__statusIO.read(response,lastLine)
     
-    def checkFiles(self,response,lastFileId):
+    def getFiles(self,response,lastFileId):
         '''Check output directory for new files.'''
-        return self.__fileCheck.checkFiles(response,lastFileId)
+        return self.__fileCheck.getFiles(response,lastFileId)
     
 _controller = _Controller()
     

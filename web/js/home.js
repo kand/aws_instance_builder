@@ -2,20 +2,30 @@
 function charReplace(server_output){
 	return server_output.replace(/\\n/g,"<br/>").replace(/\\'/g,"'");
 }
+
+/* Set update time text at bottom of window */
+function setUpdateTime(clearTimer){
+	var date = new Date();
+    $("#last_update_time").html(date.getHours() + ":"
+            + date.getMinutes() + ":" + date.getSeconds());
+    
+    if(clearTimer){
+        clearTimeout(updateTimer);
+        updateTimer = null;
+        $("#stop_button").hide();
+        $("#start_button").show();
+    }
+}
         
 /* Gets the current status of the server, writes to server status to window */
-var updateTimer = null;
 var lastLine = 0;
 function getStatus(){
-	//maybe here put another ajax request for any new files
-	
     $.ajax({
         url:"getstatus",
         type:"POST",
         data:({lastLine:lastLine}),
         dataType:"json",
         success: function(data){
-            var date = new Date();
             lastLine = data.lastLine;
             
             consoleOutput = "<span class='";
@@ -26,8 +36,8 @@ function getStatus(){
             }
             consoleOutput += "</span>"
             $("#console_section").append(consoleOutput);
-            $("#last_update_time").html(date.getHours() + ":"
-                + date.getMinutes() + ":" + date.getSeconds());
+
+            setUpdateTime(false);
         },
         error: function(){
             var date = new Date();
@@ -37,29 +47,63 @@ function getStatus(){
             $("#last_update_time").html(date.getHours() + ":"
                 + date.getMinutes() + ":" + date.getSeconds());
             
-            clearTimeout(updateTimer);
-            updateTimer = null;
-            $("#stop_button").hide();
-            $("#start_button").show();   
+            setUpdateTime(true);
         }
     });
 }
 
-/* Provides functionality to tabbed navigation */
+/* Gets all files added after lastFileId, only one of these requests can be made at a time */
+var lastFileId = 0;
+function getFiles(){
+	getFilesRequest = $.ajax({
+		url:"getfiles",
+		type:"POST",
+		data:({lastFileId:lastFileId}),
+		dataType:"json",
+		success: function(data){
+			var l = data.files.length;
+			for(var i = 0;i < l;i++){
+				lastFileId = data.files[i].id;
+				
+				var fId = "file_" + data.files[i].id
+				var fileOutput = "<li id='" + fId + "'>\n";
+				fileOutput += "\t<a id='" + fId + "_link' class='file_link' target='_blank' href='" + data.files[i].path + "'>";
+				fileOutput += data.files[i].name + "</a>\n";
+				fileOutput += "\t<div id='" + fId + "_desc' class='file_description'>" + data.files[i].desc + "</div>\n";
+				fileOutput += "</li>\n";
+				
+				$("#fileOutput").append(fileOutput);
+	            
+				setUpdateTime(false);				
+			}
+		},
+		error: function(){
+			setUpdateTime(true);
+		}
+	});
+}
+
+/* Turn on tab with active class when page is first loaded */
 var navBarTabs = $("#nav_bar .tab");
 var contentSections = $("div.content_section");
-function navTabClick(){
-	navBarTabs.removeClass("active");
-	contentSections.css("display","none");
-	$("#" + $(this).addClass("active").attr("id").split("_")[2] + "_section")
-		.css("display","block");
+function getActiveTab(){
+	var l = navBarTabs.length;
+	for(var i = 0;i < l;i++){
+		var t = $(navBarTabs[i]); 
+		if(t.hasClass("active")){
+			contentSections.css("display","none");
+			$("#" + t.attr("id").split("_")[2] + "_section")
+				.css("display","block");
+			
+			return t;
+		}	
+	}
 }
 
 /* Turn on/off updater. 'start' true to start updating, false to stop updating */
 function toggleUpdate(start){
 	if(start && updateTimer === null){
-        getStatus();
-        updateTimer = setInterval("getStatus()",5000);
+        setTimer();
         $("#start_button").css("display","none");
         $("#stop_button").css("display","inline");
 	} else if(!start && updateTimer !== null){
@@ -70,12 +114,25 @@ function toggleUpdate(start){
 	}
 }
 
+/* Set up update timer depending on tab */
+var updateTimer = null;
+var activeTab;
+function setTimer(){
+    if(activeTab.attr("id") === "nav_tab_console"){
+        getStatus();
+        updateTimer = setInterval("getStatus()",5000);
+    } else {
+    	getFiles();
+    	updateTimer = setInterval("getFiles()",60000);
+    }
+}
+
+
 $(document).ready(function(){
-    getStatus();
-    updateTimer = setInterval("getStatus()",5000);
-    
-    navBarTabs.click(navTabClick);
+	activeTab = getActiveTab();
+	setTimer();
 
     $("#start_button").click(function(){toggleUpdate(true);});       
     $("#stop_button").click(function(){toggleUpdate(false);});
+    $("#files_refresh").click(getFiles);
 });

@@ -1,58 +1,75 @@
 import os
 
 from util.jsonObject import *
+from util.dbAccess import *
 
 class fileCheckResponse(JSONObject):
-    def __init__(self,error="",newFiles={}):
+    def __init__(self,error="",files=[]):
         self.__json__error = error
-        self.__json__newFiles = newFiles
+        self.__json__files = files
         
     def getError(self):
         return self.__json__error
     def setError(self,val):
         self.__json__error = val
-    def getNewFiles(self):
-        return self.__json__newFiles
-    def setNewFiles(self,val):
-        self.__json__newFiles = val
-        
-class newFileObj:
-    def __init__(self,name,id,path,desc):
-        self.name = name
-        self.id = id
-        self.path = path
-        self.desc = desc
-    def getTup(self):
-        return [name,tuple([id,path,desc])]
+    def getFiles(self):
+        return self.__json__files
+    def setFiles(self,val):
+        self.__json__files = val
         
 class fileChecker(object):
-    '''Provides methods to check output directory for new files to be served to
-    the webpage for download.'''
+    '''Provides methods to get any files currently in the output directory.
+    Based on database. Pipelines can send special command to program to add
+    file entries to database.'''
     
-    def __init__(self,outputDir):
+    __DB_TABLE_PIPELINEFILES = "pipelinefiles"
+    
+    def __init__(self,outputDir,dbPath):
         self.__outputDir = outputDir
+        self.__dbPath = dbPath
     
-    def checkFiles(self,response,lastFileId):
-        '''Return JSON with any new files that have been put into the output
-        directory since the last update.
+    def getFiles(self,response,lastFileId):
+        '''Return JSON with any files in the output directory.
         
             response   - the http response object pass in from quixote.
-            lastFileId - the id of the last file given to the client.
+            lastFileId - id of the last file the client has
             
             JSON returned has the following values:
             
             error    - populated only if an error has occured.
-            newFiles - a dictionary of new files the client should display. The
+            files - a dictionary of files the client should display. The
                 dictionary key is the name of the file to display, the value is
                 a tuple = (fileId,filePath,fileDescription)'''
         response.set_content_type("application/json")
-        fileDict = {}
+        try:
+            lastFileId = int(lastFileId)
+        except ValueError:
+            return fileCheckResponse(error="lastFileId must be int\n").serialize()
         
+        dba = DbAccess(self.__dbPath)
+        sql = "SELECT * FROM " + self.__DB_TABLE_PIPELINEFILES \
+            + " WHERE id > :lastFileId"
+        params = {"lastFileId":lastFileId}
         
-        #get files in directory
-        #compare to database
-        #add any new files to database
-        #return all files since lastFileId
+        c = dba.execute(sql,False,params)
         
-        return fileCheckResponse(newFiles=fileDict).serialize()
+        files = []
+        
+        for r in c:
+            files.append({"id":r["id"],"name":r["name"],"path":r["path"],"desc":r["description"]})
+        
+        dba.closeConn()
+        return fileCheckResponse(files=files).serialize()
+    
+    def addFile(self,name,path,description):
+        '''Called through a command called by pipeline scripts. This will add a file
+        path to the database that can then be served to the client.'''
+        dba = DbAccess(self.__dbPath)
+        sql = "INSERT INTO " + self.__DB_TABLE_PIPELINEFILES \
+            + "(name,path,description) VALUES (:name,:path,:description)"
+        params = {"name":name,"path":path,"description":description}
+        
+        dba.execute(sql,True,params)
+        
+        dba.closeConn()
         

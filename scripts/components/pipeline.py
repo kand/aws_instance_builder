@@ -1,4 +1,4 @@
-import subprocess,os,urllib
+import subprocess,os,urllib,re
 
 from threading import Thread
 from controller import Controller,redirectExceptions
@@ -7,6 +7,9 @@ class Pipeline(Thread):
     '''Provides methods to run/use pipelines.'''
     
     __PIPELINE_FILE_NAME = "pipeline_script"
+    __COMMAND_PATTERNS = {
+        "addFileToDB":r"pComm\.addFileToDB\(\"(?P<name>.+)\",\"(?P<path>.+)\",\"(?P<desc>.+)\"\)"
+    }
     
     SIG_KEY = "pipeline_complete"
     
@@ -51,7 +54,30 @@ class Pipeline(Thread):
         
         #redirect output to website
         while(process.poll() == None):
-            Controller().swrite("[PIPELINE] %s" % process.stdout.read())
+            #If a special 'pcomm.addFileToDB("<name>","<path>","<description>")' 
+            #    command is echoed from a pipeline, a new file path entry will
+            #    be added to the database so that the file can then be served
+            #    to the client. This will only work for files placed in the
+            #    web/output directory. The <path> variable must also be a path
+            #    starting with 'output/'.
+            
+            #Note: pipelines are run from the scripts/ directory, so you must go up
+            #    one level and down into web and output to put files in the correct
+            #    place, eg '../web/output/'
+            
+            pOut = process.stdout.read()
+            
+            m = re.search(self.__COMMAND_PATTERNS["addFileToDB"],pOut)
+            if m is not None:
+                Controller().getFileChecker().addFile(m.group("name"),
+                                                      m.group("path"),
+                                                      m.group("desc"))
+                Controller().swrite("Pipeline added file: %s,%s,%s" \
+                                    % (m.group("name"),m.group("path"),m.group("desc")))
+                pOut = pOut.replace(m.group(),"")
+            
+            if(len(pOut) > 0):
+                Controller().swrite("[PIPELINE] %s" % pOut)
             Controller().swrite("[PIPELINE] %s" % process.stderr.read())
         
         Controller().getSignals()[self.SIG_KEY] = True

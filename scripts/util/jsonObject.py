@@ -12,7 +12,7 @@ class JSONObject(object):
         ret = "{"
         vdict = self.__getJSONdict();
         for v in vdict:
-            ret += self.__convert(v,vdict[v]) + ","
+            ret += self.__convert(v,vdict[v])
         return ret.rstrip(",") + "}"
     
     def __convert(self,key,value):
@@ -21,19 +21,19 @@ class JSONObject(object):
         if key:
             ret = '"%s":' % key
         if isinstance(value,int) or isinstance(value,float):
-            ret += str(value)
+            ret += str(value) + ","
         elif isinstance(value,basestring):
-            ret += json.JSONEncoder().encode(repr(value).lstrip("u'").strip("'"))
+            ret += json.JSONEncoder().encode(repr(value).lstrip("u'").strip("'")) + ","
         elif isinstance(value,list):
             ret += "["
             for i in value:
-                self.__convert(None,i)
-            ret += "]"
+                ret += self.__convert(None,i)
+            ret = ret.rstrip(",") + "],"
         elif isinstance(value,dict):
             ret += "{"
             for k in value:
-                self.__convert(k, value[k])
-            ret += "}"
+                ret += self.__convert(k, value[k])
+            ret = ret.rstrip(",") + "},"
         return ret
         
     def __getJSONdict(self):

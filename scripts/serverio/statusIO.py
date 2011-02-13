@@ -32,10 +32,6 @@ class StatusIO(object):
                                 #    can be properly be sent across the network
     
     def __init__(self,dbPath,resourcesDir):
-        #clear database before use
-        dba = DbAccess(dbPath)
-        dba.executeFromFile(os.path.join(resourcesDir, "sql/clearDb.sql"))
-        dba.closeConn()
         self.__dbPath = dbPath
         
     def write(self,text):
@@ -84,8 +80,8 @@ class StatusIO(object):
         c = dba.execute(sql,False,params)
             
         for r in c:
-            lastLine = r[0]
-            lines += r[1]
+            lastLine = r["id"]
+            lines += r["value"]
     
         dba.closeConn()
         return StatusIOResponse(lastLine=lastLine,lines=lines).serialize()

@@ -11,6 +11,7 @@ class DbAccess(object):
         '''Open db connection to db at dbPath.'''
         if self.__conn is None:
             self.__conn = sqlite3.connect(self.__db)
+            self.__conn.row_factory = sqlite3.Row
             
     def closeConn(self):
         '''Commit changes, close current db connection and cursor.'''
@@ -35,7 +36,8 @@ class DbAccess(object):
         sql = f.read()
         f.close()
         
-        self.execute(sql,nonQuery,params)
+        self.openConn()
+        self.__conn.executescript(sql)
     
 if __name__ == "__main__":
     pass

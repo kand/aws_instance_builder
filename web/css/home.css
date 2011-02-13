@@ -6,6 +6,7 @@
 	cursor:pointer;
 	color:#ffffff;
 	background-color:#c0c0c0;
+	text-decoration:none;
 }
 #nav_bar .active{
 	padding: 0 .2em;
@@ -25,7 +26,6 @@ div.content_section{
 }
 
 #console_section{
-	display:block;
 }
 #console_section .error{
 	color:#ff0000;
@@ -36,10 +36,10 @@ div.content_section{
 #outputFiles_section{
 	padding:10px;
 }
-#outputFiles_section ol{
+#outputFiles_section #fileOutput{
 	list-style-type:none;
 }
-#outputFiles_section li{
+#outputFiles_section #fileOutput li{
 }
 #outputFiles_section a.file_link{
 }
@@ -58,8 +58,10 @@ div.content_section{
 }	
 #stop_button{
 }
+#files_refresh{
+}
 
-#start_button,#stop_button{
+#start_button,#stop_button,#files_refresh{
 	text-decoration:underline;
 	color:#0000ff;
 	cursor:pointer;
