@@ -1,9 +1,11 @@
 import os
 
+from sqlite3 import OperationalError
 from util.jsonObject import *
 from util.dbAccess import *
+from controller import DIR_FILEOUTPUT,DB_FILE
 
-class fileCheckResponse(JSONObject):
+class FileCheckResponse(JSONObject):
     def __init__(self,error="",files=[]):
         self.__json__error = error
         self.__json__files = files
@@ -17,18 +19,31 @@ class fileCheckResponse(JSONObject):
     def setFiles(self,val):
         self.__json__files = val
         
-class fileChecker(object):
+class FileChecker(object):
     '''Provides methods to get any files currently in the output directory.
     Based on database. Pipelines can send special command to program to add
     file entries to database.'''
     
     __DB_TABLE_PIPELINEFILES = "pipelinefiles"
     
-    def __init__(self,outputDir,dbPath):
-        self.__outputDir = outputDir
-        self.__dbPath = dbPath
+    @staticmethod
+    def addFile(name,path,description):
+        '''Called through a command called by pipeline scripts. This will add a file
+        path to the database that can then be served to the client.'''
+        dba = DbAccess(DB_FILE)
+        sql = "INSERT INTO " + FileChecker.__DB_TABLE_PIPELINEFILES \
+            + "(name,path,description) VALUES (:name,:path,:description)"
+        params = {"name":name,"path":path,"description":description}
+        
+        try:
+            dba.execute(sql,True,params)
+        except OperationalError:
+            cprint("[ERROR] A process has the database locked.")
+        
+        dba.closeConn()
     
-    def getFiles(self,response,lastFileId):
+    @staticmethod
+    def getFiles(response,lastFileId):
         '''Return JSON with any files in the output directory.
         
             response   - the http response object pass in from quixote.
@@ -46,12 +61,15 @@ class fileChecker(object):
         except ValueError:
             return fileCheckResponse(error="lastFileId must be int\n").serialize()
         
-        dba = DbAccess(self.__dbPath)
-        sql = "SELECT * FROM " + self.__DB_TABLE_PIPELINEFILES \
+        dba = DbAccess(DB_FILE)
+        sql = "SELECT * FROM " + FileChecker.__DB_TABLE_PIPELINEFILES \
             + " WHERE id > :lastFileId"
         params = {"lastFileId":lastFileId}
         
-        c = dba.execute(sql,False,params)
+        try:
+            c = dba.execute(sql,False,params)
+        except OprationalError:
+            cprint("[ERROR] A process has the database locked.")
         
         files = []
         
@@ -59,17 +77,6 @@ class fileChecker(object):
             files.append({"id":r["id"],"name":r["name"],"path":r["path"],"desc":r["description"]})
         
         dba.closeConn()
-        return fileCheckResponse(files=files).serialize()
-    
-    def addFile(self,name,path,description):
-        '''Called through a command called by pipeline scripts. This will add a file
-        path to the database that can then be served to the client.'''
-        dba = DbAccess(self.__dbPath)
-        sql = "INSERT INTO " + self.__DB_TABLE_PIPELINEFILES \
-            + "(name,path,description) VALUES (:name,:path,:description)"
-        params = {"name":name,"path":path,"description":description}
-        
-        dba.execute(sql,True,params)
-        
-        dba.closeConn()
+        return FileCheckResponse(files=files).serialize()
+
         

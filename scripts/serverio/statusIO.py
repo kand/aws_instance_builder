@@ -1,7 +1,10 @@
-import os
+import os,traceback
+
+from sqlite3 import OperationalError
 
 from util.jsonObject import *
 from util.dbAccess import *
+from controller import Controller,cprint,DB_FILE
 
 class StatusIOResponse(JSONObject):
     def __init__(self,error="",lastLine=-1,lines=""):
@@ -22,7 +25,7 @@ class StatusIOResponse(JSONObject):
     def setLines(self,val):
         self.__json__lines = val
 
-class StatusIO(object):
+class StatusIO():
     '''Provides methods to read/write to server status db table.'''
     
     __DB_TABLE_STATUS = "status"
@@ -30,27 +33,34 @@ class StatusIO(object):
                                 #    be sent to client. This will prevent issues
                                 #    where a program has output more lines than
                                 #    can be properly be sent across the network
-    
-    def __init__(self,dbPath,resourcesDir):
-        self.__dbPath = dbPath
         
-    def write(self,text):
-        '''Writes specified text to db and console.'''
-        dba = DbAccess(self.__dbPath)
+    @staticmethod
+    def write(text):
+        '''Writes specified text to db.
+            
+            dbPath = path to database file
+            text = text to write'''
+        dba = DbAccess(DB_FILE)
         
         vals = text.split("\n")
         pcount = 0
         for s in vals:
-            sql = "INSERT INTO " + self.__DB_TABLE_STATUS + "(value) VALUES ("
+            sql = "INSERT INTO " + StatusIO.__DB_TABLE_STATUS + "(value)"
             key = "line%i" % pcount
-            sql += ":%s" % key
-            sql += ")"
+            sql += " VALUES (:%s)" % key
             
-            dba.execute(sql,True,{key:"%s\n" % s})
+            try:
+                dba.execute(sql,True,{key:"%s\n" % s})
+            except OperationalError:
+                cprint("[DB_WRITE] [ERROR] a process has the database locked.")
+                dba.closeConn()
+                return
         
         dba.closeConn()
+        cprint("[DB_WRITE] {{ %s }}" % text)
         
-    def read(self,response,lastLine):
+    @staticmethod
+    def read(response,lastLine):
         '''Return, as json, all lines since lastLine. 
         
             response - the http response object passed in from quixote. 
@@ -72,22 +82,40 @@ class StatusIO(object):
             return StatusIOResponse(error="lastLine must be int\n").serialize()
         
         lines = ""
-        dba = DbAccess(self.__dbPath)
-        sql = "SELECT id,value FROM " + self.__DB_TABLE_STATUS \
-            + " WHERE id > :lastLine LIMIT " + str(self.__MAX_LINE_OUTPUT)
+        dba = DbAccess(DB_FILE)
+        sql = "SELECT id,value FROM " + StatusIO.__DB_TABLE_STATUS \
+            + " WHERE id > :lastLine LIMIT " + str(StatusIO.__MAX_LINE_OUTPUT)
         params = {"lastLine":lastLine}
             
-        c = dba.execute(sql,False,params)
+        try:
+            c = dba.execute(sql,False,params)
+        except OperationalError:
+            cprint("[DB_READ] [ERROR] a process has the database locked.")
+            dba.closeConn()
+            return StatusIOResponse(error="A process has the database locked.\n").serialize()
             
         for r in c:
             lastLine = r["id"]
             lines += r["value"]
     
         dba.closeConn()
+        cprint("[DB_READ] {{ %s }}" % lines)
+        
         return StatusIOResponse(lastLine=lastLine,lines=lines).serialize()
 
-    def getStatusTableName(self):
-        return self.__DB_TABLE_STATUS
+def redirectExceptions(f):
+    '''Function decorator to catch thread exceptions and print to main output.
+    This decorator should be put before all run() functions in threads that
+    are to be threaded through Controller. This makes error catching a lot
+    easier.'''
+    def wrap(self,*args,**kwargs):
+        try:
+           return f(self,*args,**kwargs)
+        except:
+           cprint(traceback.print_exc())
+           StatusIO.write(traceback.print_exc())
+           return None
+    return wrap
 
 if __name__ == "__main__":
     pass

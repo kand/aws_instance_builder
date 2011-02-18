@@ -7,15 +7,19 @@ from quixote.util import StaticFile,StaticDirectory
 from quixote.server.simple_server import run
 from jinja2 import Environment,FileSystemLoader
 
-from controller import Controller,redirectExceptions
+from controller import Controller,DIR_JS,DIR_CSS,DIR_FILEOUTPUT,DIR_HTML,SIG_KEY_PIPELINE
+from serverio.statusIO import StatusIO,redirectExceptions
+from serverio.fileChecker import FileChecker
+from pipeline import Pipeline
 
 class Root(Directory):
-    _q_exports = ["","css","js","output","getstatus","getfiles","console","files"]
+    _q_exports = ["","css","js","output","getstatus","getfiles","console","files",
+                  "results"]
 
-    js = StaticDirectory(Controller().getJsDir())
-    css = StaticDirectory(Controller().getCssDir())
-    output = StaticDirectory(Controller().getFileOutDir())
-    __j2env = Environment(loader=FileSystemLoader(Controller().getHtmlDir()))
+    js = StaticDirectory(DIR_JS)
+    css = StaticDirectory(DIR_CSS)
+    output = StaticDirectory(DIR_FILEOUTPUT)
+    __j2env = Environment(loader=FileSystemLoader(DIR_HTML))
 
     def __init__(self):
         pass
@@ -28,12 +32,22 @@ class Root(Directory):
     
     def files(self):
         return self.__j2env.get_template("home.html").render(outputFiles_active="active")
+    
+    def results(self):
+        if Controller().SIG_KEYS[SIG_KEY_PIPELINE] == True:
+            content = "Pipeline has completed."
+        else:
+            content = "Pipeline has not yet completed."
+        
+        resultsOutput = self.__j2env.get_template("resultsOutput.html").render(content=content)
+        return self.__j2env.get_template("home.html").render(results_active="active",
+                                                             results_output=resultsOutput)
 
     def getstatus(self):
-        return Controller().sread(get_response(),get_request().get_field("lastLine"))
+        return StatusIO.read(get_response(),get_request().get_field("lastLine"))
 
     def getfiles(self):
-        return Controller().getFiles(get_response(),get_request().get_field("lastFileId"))
+        return FileChecker.getFiles(get_response(),get_request().get_field("lastFileId"))
 
 class WebRoot(Thread):
     '''Provides methods to start web server.'''

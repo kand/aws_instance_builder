@@ -1,7 +1,9 @@
 import subprocess,os
 
 from threading import Thread
-from controller import Controller,redirectExceptions
+
+from controller import Controller,SIG_KEY_INSTALLER
+from serverio.statusIO import StatusIO,redirectExceptions
 
 class Installer(Thread):
     '''Provides methods to install software on server'''
@@ -10,7 +12,6 @@ class Installer(Thread):
     NODEJS_PATH = NODEJS_DIR + '/node.js'
     CHEF_REPO_LOCATION = 'http://lyorn.idyll.org/~nolleyal/chef/' \
         'chef-solo.tar.gz'
-    SIG_KEY = "installer_complete"
         
     def __init__(self,softwareList):
         Thread.__init__(self)
@@ -20,8 +21,6 @@ class Installer(Thread):
     def run(self):
         '''Used to install software on the server. Reports to statusIOobj to
             inform user of status. Starts pipeline once install complete'''
-        Controller().getSignals()[self.SIG_KEY] = False
-        
         #write software to node.js
         if not os.path.isdir(Installer.NODEJS_DIR):
             os.mkdir(Installer.NODEJS_DIR)
@@ -37,10 +36,10 @@ class Installer(Thread):
             
         #redirect output to website
         while(process.poll() == None):
-            Controller().swrite(process.stdout.read())
-            Controller().swrite(process.stderr.read())
+            StatusIO.write(process.stdout.read())
+            StatusIO.write(process.stderr.read())
             
-        Controller().getSignals()[self.SIG_KEY] = True
+        Controller().SIG_KEYS[SIG_KEY_INSTALLER] = True
         
 if __name__ == "__main__":
     pass

@@ -6,12 +6,15 @@
 {% endblock %}
 {% block content %}
 	<div id="nav_bar">
-		<a id="nav_tab_console" class="tab {{ console_active }}" href="console">Console</a> <a id="nav_tab_outputFiles" class="tab {{ outputFiles_active }}" href="files">Output Files</a>
+		<a id="nav_tab_console" class="tab {{ console_active }}" href="console">Console</a> <a id="nav_tab_outputFiles" class="tab {{ outputFiles_active }}" href="files">Output Files</a> <a id="nav_tab_results" class="tab {{ results_active }}" href="results">Results</a>
 	</div>
 	<div id="console_section" class="content_section"></div>
 	<div id="outputFiles_section" class="content_section">
 		Pipelines will list any files they have produced here. Click here to refresh this list: <span id="files_refresh">refresh</span>
 		<ol id="fileOutput"></ol>
+	</div>
+	<div id="results_section" class="content_section">
+		{{ results_output }}
 	</div>
 	<div id="content_footer">
 		<span class="label">Last update at</span> <span id="last_update_time">00:00:00</span>

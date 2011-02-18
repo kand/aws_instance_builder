@@ -1,7 +1,11 @@
 import subprocess,os,urllib,re
 
+from sqlite3 import OperationalError
 from threading import Thread
-from controller import Controller,redirectExceptions
+
+from controller import Controller,cprint,DIR_FILEOUTPUT,SIG_KEY_PIPELINE
+from serverio.statusIO import StatusIO,redirectExceptions
+from serverio.fileChecker import FileChecker
 
 class Pipeline(Thread):
     '''Provides methods to run/use pipelines.'''
@@ -20,40 +24,40 @@ class Pipeline(Thread):
     @redirectExceptions
     def run(self):
         '''Start a pipeline downloaded from pipelineUrl.'''
-        Controller().getSignals()[self.SIG_KEY] = False
-        Controller().swrite("Pipeline located at '%s', downloading..." \
-                                         % self.__pipelineUrl)
+        
+        StatusIO.write("Pipeline located at '%s', downloading..." \
+                       % self.__pipelineUrl)
         
         #copy pipeline into current directory
         try:
-            pulr = urllib.urlopen(self.__pipelineUrl)
+            purl = urllib.urlopen(self.__pipelineUrl)
         except IOError:
-            Controller().swrite("[ERROR] Pipeline not found at url.")
+            StatusIO.write("[ERROR] Pipeline not found at url.")
             return
             
-        f = open(self.__PIPELINE_FILE_NAME,"w")
-        f.write(pulr.read())
+        f = open(Pipeline.__PIPELINE_FILE_NAME,"w")
+        f.write(purl.read())
         f.close()
-        pulr.close()
+        purl.close()
         
-        if os.path.getsize(self.__PIPELINE_FILE_NAME) < 1:
-            Controller().swrite("[ERROR] Pipeline script was not properly downloaded.")
+        if os.path.getsize(Pipeline.__PIPELINE_FILE_NAME) < 1:
+            StatusIO.write("[ERROR] Pipeline script was not properly downloaded.")
             return
             
         #make pipeline executable
-        command = ["chmod","+x",self.__PIPELINE_FILE_NAME]
+        command = ["chmod","+x",Pipeline.__PIPELINE_FILE_NAME]
         process = subprocess.Popen(command)
-        while(process.poll() == None): pass
+        while(process.poll() is None): pass
         
-        Controller().swrite("Pipeline now executable. Executing...")
+        StatusIO.write("Pipeline now executable. Executing...")
         
         #execute pipeline script
-        command = ["sudo","./%s" % self.__PIPELINE_FILE_NAME]
+        command = ["sudo","./%s" % Pipeline.__PIPELINE_FILE_NAME]
         process = subprocess.Popen(command,stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         
         #redirect output to website
-        while(process.poll() == None):
+        while(process.poll() is None):
             #If a special 'pcomm.addFileToDB("<name>","<path>","<description>")' 
             #    command is echoed from a pipeline, a new file path entry will
             #    be added to the database so that the file can then be served
@@ -61,26 +65,27 @@ class Pipeline(Thread):
             #    web/output directory. The <path> variable must also be a path
             #    starting with 'output/'.
             
-            #Note: pipelines are run from the scripts/ directory, so you must go up
-            #    one level and down into web and output to put files in the correct
-            #    place, eg '../web/output/'
-            
+            #NEW ISSUE: too much output produces an extremely long string here
+            #    so, need to check length of string, if too long, just pipe it
+            #    straight away to file???
             pOut = process.stdout.read()
+            pErr = process.stderr.read()
             
-            m = re.search(self.__COMMAND_PATTERNS["addFileToDB"],pOut)
-            if m is not None:
-                Controller().getFileChecker().addFile(m.group("name"),
-                                                      m.group("path"),
-                                                      m.group("desc"))
-                Controller().swrite("Pipeline added file: %s,%s,%s" \
-                                    % (m.group("name"),m.group("path"),m.group("desc")))
-                pOut = pOut.replace(m.group(),"")
-            
+            if(len(pOut) > len(self.__COMMAND_PATTERNS["addFileToDB"])):
+                m = re.search(self.__COMMAND_PATTERNS["addFileToDB"],pOut)
+                if m is not None:
+                    FileChecker.addFile(m.group("name"),
+                                        m.group("path"),
+                                        m.group("desc"))
+                    StatusIO.write("Pipeline added file: <a href='%s' target='_blank'>%s</a> - %s" \
+                                   % (m.group("path"),m.group("name"),m.group("desc")))
+                    pOut = pOut.replace(m.group(),"")
+
             if(len(pOut) > 0):
-                Controller().swrite("[PIPELINE] %s" % pOut)
-            Controller().swrite("[PIPELINE] %s" % process.stderr.read())
+                StatusIO.write("[PIPELINE] %s" % pOut)
+                StatusIO.write("[PIPELINE] %s" % pErr)
         
-        Controller().getSignals()[self.SIG_KEY] = True
+        Controller().SIG_KEYS[SIG_KEY_PIPELINE] = True
     
 if __name__ == "__main__":
     pass

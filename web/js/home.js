@@ -1,10 +1,28 @@
-/* Replace any characters from output with html tags for formatting */
-function charReplace(server_output){
-	return server_output.replace(/\\n/g,"<br/>").replace(/\\'/g,"'");
+var activeRequest = null;
+
+/* Set up update timer depending on tab */
+var updateTimer = null;
+var activeTab;
+function setTimer(){
+    if(activeTab.attr("id") === "nav_tab_console"){
+        getStatus();
+        updateTimer = setInterval("getStatus()",5000);
+    } else {
+    	getFiles();
+    	updateTimer = setInterval("getFiles()",60000);
+    }
 }
 
-/* Set update time text at bottom of window */
+/* Replace any characters from output with html tags for formatting */
+function charReplace(server_output){
+	return server_output.replace(/\\n/g,"<br/>")
+						.replace(/\\'/g,"'");
+}
+
+/* Set update time text at bottom of window, clear timer and request */
 function setUpdateTime(clearTimer){
+	activeRequest = null;
+	
 	var date = new Date();
     $("#last_update_time").html(date.getHours() + ":"
             + date.getMinutes() + ":" + date.getSeconds());
@@ -20,24 +38,30 @@ function setUpdateTime(clearTimer){
 /* Gets the current status of the server, writes to server status to window */
 var lastLine = 0;
 function getStatus(){
-    $.ajax({
+	if(activeRequest){
+		return false;
+	}
+	
+    activeRequest = $.ajax({
         url:"getstatus",
         type:"POST",
         data:({lastLine:lastLine}),
         dataType:"json",
         success: function(data){
             lastLine = data.lastLine;
+            var clearTime = false;
             
-            consoleOutput = "<span class='";
+            var consoleOutput = "<span class='";
             if(data.error.length > 0){
             	consoleOutput += "error'>Error: " + charReplace(data.error);
+            	clearTime = true;
             } else {
             	consoleOutput += "content_block'>" + charReplace(data.lines);
             }
             consoleOutput += "</span>"
             $("#console_section").append(consoleOutput);
 
-            setUpdateTime(false);
+            setUpdateTime(clearTime);
         },
         error: function(){
             var date = new Date();
@@ -55,7 +79,11 @@ function getStatus(){
 /* Gets all files added after lastFileId, only one of these requests can be made at a time */
 var lastFileId = 0;
 function getFiles(){
-	getFilesRequest = $.ajax({
+	if(activeRequest){
+		return false;
+	}
+	
+	activeRequest = $.ajax({
 		url:"getfiles",
 		type:"POST",
 		data:({lastFileId:lastFileId}),
@@ -113,20 +141,6 @@ function toggleUpdate(start){
         $("#start_button").css("display","inline");	
 	}
 }
-
-/* Set up update timer depending on tab */
-var updateTimer = null;
-var activeTab;
-function setTimer(){
-    if(activeTab.attr("id") === "nav_tab_console"){
-        getStatus();
-        updateTimer = setInterval("getStatus()",5000);
-    } else {
-    	getFiles();
-    	updateTimer = setInterval("getFiles()",60000);
-    }
-}
-
 
 $(document).ready(function(){
 	activeTab = getActiveTab();

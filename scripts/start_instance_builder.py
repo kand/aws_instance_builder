@@ -1,5 +1,5 @@
 import os,sys
-from controller import Controller
+from controller import Controller,SIG_KEY_INSTALLER
 from components.webroot import WebRoot
 from components.installer import Installer
 from components.pipeline import Pipeline
@@ -11,8 +11,7 @@ def start(host,port,softwareList,piplineUrl):
     Controller().startThreading(i)
     
     #wait for installer to finish and start pipeline
-    while not Controller().getSignals().has_key(Installer.SIG_KEY) \
-        or not Controller().getSignals()[Installer.SIG_KEY]: pass
+    while not Controller().SIG_KEYS[SIG_KEY_INSTALLER]: pass
     Controller().startThreading(Pipeline(pipelineUrl))
         
     while Controller().isAlive(): pass

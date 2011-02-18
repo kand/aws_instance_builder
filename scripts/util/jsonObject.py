@@ -23,7 +23,7 @@ class JSONObject(object):
         if isinstance(value,int) or isinstance(value,float):
             ret += str(value) + ","
         elif isinstance(value,basestring):
-            ret += json.JSONEncoder().encode(repr(value).lstrip("u'").strip("'")) + ","
+            ret += json.JSONEncoder().encode(repr(value).lstrip("u'").strip("'").strip('"')) + ","
         elif isinstance(value,list):
             ret += "["
             for i in value:
