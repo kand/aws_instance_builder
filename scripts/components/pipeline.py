@@ -12,7 +12,8 @@ class Pipeline(Thread):
     
     __PIPELINE_FILE_NAME = "pipeline_script"
     __COMMAND_PATTERNS = {
-        "addFileToDB":r"pComm\.addFileToDB\(\"(?P<name>.+)\",\"(?P<path>.+)\",\"(?P<desc>.+)\"\)"
+        "addFileToDB":r"pComm\.addFileToDB\(\"(?P<name>.+)\",\"(?P<path>.+)\",\"(?P<desc>.+)\"\)",
+        "writeToResults":"pComm\.writeToResults\(\"(?P<results>.+)\"\)"
     }
     
     SIG_KEY = "pipeline_complete"
@@ -71,21 +72,40 @@ class Pipeline(Thread):
             pOut = process.stdout.read()
             pErr = process.stderr.read()
             
-            if(len(pOut) > len(self.__COMMAND_PATTERNS["addFileToDB"])):
-                m = re.search(self.__COMMAND_PATTERNS["addFileToDB"],pOut)
-                if m is not None:
-                    FileChecker.addFile(m.group("name"),
-                                        m.group("path"),
-                                        m.group("desc"))
-                    StatusIO.write("Pipeline added file: <a href='%s' target='_blank'>%s</a> - %s" \
-                                   % (m.group("path"),m.group("name"),m.group("desc")))
-                    pOut = pOut.replace(m.group(),"")
+            #might be able to search for both patterns at the sime time here
+            pOut = self.__addFileToDB(pOut)
+            pOut = self.__writeToResults(pOut)
 
             if(len(pOut) > 0):
-                StatusIO.write("[PIPELINE] %s" % pOut)
-                StatusIO.write("[PIPELINE] %s" % pErr)
+                StatusIO.write("[PIPELINE][COUT] {{ %s }}" % pOut)
+            if(len(pErr) > 0):
+                StatusIO.write("[PIPELINE][CERR] {{ %s }}" % pErr)
+                
+            StatusIO.write("Pipeline complete. Click here to view results: <a href='results'>results</a>")
         
         Controller().SIG_KEYS[SIG_KEY_PIPELINE] = True
+        
+    def __addFileToDB(self,pOut):
+        if(len(pOut) < len(self.__COMMAND_PATTERNS["addFileToDB"])):
+            return pOut
+        
+        m = re.search(self.__COMMAND_PATTERNS["addFileToDB"],pOut)
+        if m is not None:
+            FileChecker.addFile(m.group("name"),
+                                m.group("path"),
+                                m.group("desc"))
+            StatusIO.write("Pipeline added file: <a href='%s' target='_blank'>%s</a> - %s" \
+                            % (m.group("path"),m.group("name"),m.group("desc")))
+            return pOut.replace(m.group(),"")
+    
+    def __writeToResults(self,pOut):
+        if(len(pOut) > len(self.__COMMAND_PATTERNS["writeToResults"])):
+            return pOut
+        
+        m = re.search(self.__COMMAND_PATTERNS["wrietToResults"])
+        if m is not None:
+            #write to results here
+            pass
     
 if __name__ == "__main__":
     pass

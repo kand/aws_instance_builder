@@ -4,6 +4,7 @@ from threading import Thread
 from quixote.publish import *
 from quixote.directory import Directory
 from quixote.util import StaticFile,StaticDirectory
+from quixote.errors import TraversalError
 from quixote.server.simple_server import run
 from jinja2 import Environment,FileSystemLoader
 
@@ -28,20 +29,21 @@ class Root(Directory):
         return self.__j2env.get_template("login.html").render()
     
     def console(self):
-        return self.__j2env.get_template("home.html").render(console_active="active")
+        return self.__j2env.get_template("home.html").render(showResults=Controller().SIG_KEYS[SIG_KEY_PIPELINE],
+                                                             console_active="active")
     
     def files(self):
-        return self.__j2env.get_template("home.html").render(outputFiles_active="active")
+        return self.__j2env.get_template("home.html").render(showResults=Controller().SIG_KEYS[SIG_KEY_PIPELINE],
+                                                             outputFiles_active="active")
     
     def results(self):
         if Controller().SIG_KEYS[SIG_KEY_PIPELINE] == True:
-            content = "Pipeline has completed."
-        else:
-            content = "Pipeline has not yet completed."
-        
-        resultsOutput = self.__j2env.get_template("resultsOutput.html").render(content=content)
-        return self.__j2env.get_template("home.html").render(results_active="active",
-                                                             results_output=resultsOutput)
+            content = "pipeline finished"
+            resultsOutput = self.__j2env.get_template("resultsOutput.html").render(content=content)
+            return self.__j2env.get_template("home.html").render(showResults=True,
+                                                                 results_active="active",
+                                                                 results_output=resultsOutput)
+        raise TraversalError()
 
     def getstatus(self):
         return StatusIO.read(get_response(),get_request().get_field("lastLine"))
