@@ -13,6 +13,9 @@ DIR_FILEOUTPUT = os.path.join(DIR_HTML,"output")
     
 DB_FILE = os.path.join(DIR_RESOURCES,"db.sqlite")
 
+PIPELINE_RESULTS_FILE = "resultsOutput.html"
+PIPELINE_RESULTS_PATH = os.path.join(DIR_HTML,PIPELINE_RESULTS_FILE)
+
 SIG_KEY_INSTALLER = "installer_complete"
 SIG_KEY_PIPELINE = "pipeline_complete"
 

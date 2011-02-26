@@ -8,7 +8,12 @@ from quixote.errors import TraversalError
 from quixote.server.simple_server import run
 from jinja2 import Environment,FileSystemLoader
 
-from controller import Controller,DIR_JS,DIR_CSS,DIR_FILEOUTPUT,DIR_HTML,SIG_KEY_PIPELINE
+from controller import Controller,DIR_JS, \
+                                DIR_CSS, \
+                                DIR_FILEOUTPUT, \
+                                DIR_HTML, \
+                                SIG_KEY_PIPELINE, \
+                                PIPELINE_RESULTS_FILE
 from serverio.statusIO import StatusIO,redirectExceptions
 from serverio.fileChecker import FileChecker
 from pipeline import Pipeline
@@ -38,8 +43,12 @@ class Root(Directory):
     
     def results(self):
         if Controller().SIG_KEYS[SIG_KEY_PIPELINE] == True:
-            content = "pipeline finished"
-            resultsOutput = self.__j2env.get_template("resultsOutput.html").render(content=content)
+            # using something like the following command, the file could even be
+            #     a jinja2 template with variables to be written to here
+            # this won't work completely, since variables in the tempalte could also
+            #     be variable. Maybe make a Controller().MSGS dict that allows inter
+            #    thread communication
+            resultsOutput = self.__j2env.get_template(PIPELINE_RESULTS_FILE).render()
             return self.__j2env.get_template("home.html").render(showResults=True,
                                                                  results_active="active",
                                                                  results_output=resultsOutput)

@@ -68,7 +68,7 @@ class FileChecker(object):
         
         try:
             c = dba.execute(sql,False,params)
-        except OprationalError:
+        except OperationalError:
             cprint("[ERROR] A process has the database locked.")
         
         files = []

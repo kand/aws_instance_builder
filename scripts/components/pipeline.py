@@ -3,7 +3,10 @@ import subprocess,os,urllib,re
 from sqlite3 import OperationalError
 from threading import Thread
 
-from controller import Controller,cprint,DIR_FILEOUTPUT,SIG_KEY_PIPELINE
+from controller import Controller,cprint,DIR_FILEOUTPUT, \
+                                        SIG_KEY_PIPELINE,\
+                                        PIPELINE_RESULTS_PATH
+                                        
 from serverio.statusIO import StatusIO,redirectExceptions
 from serverio.fileChecker import FileChecker
 
@@ -12,8 +15,8 @@ class Pipeline(Thread):
     
     __PIPELINE_FILE_NAME = "pipeline_script"
     __COMMAND_PATTERNS = {
-        "addFileToDB":r"pComm\.addFileToDB\(\"(?P<name>.+)\",\"(?P<path>.+)\",\"(?P<desc>.+)\"\)",
-        "writeToResults":"pComm\.writeToResults\(\"(?P<results>.+)\"\)"
+        "addFileToDB":r"pComm\.addFileToDB\([\"\'](?P<name>.+)[\"\'],[\"\'](?P<path>.+)[\"\'],[\"\'](?P<desc>.+)[\"\']\)\n?",
+        "writeToResults":r"pComm\.writeToResults\([\"\'](?P<results>.+)[\"\']\)\n?"
     }
     
     SIG_KEY = "pipeline_complete"
@@ -86,26 +89,40 @@ class Pipeline(Thread):
         Controller().SIG_KEYS[SIG_KEY_PIPELINE] = True
         
     def __addFileToDB(self,pOut):
+        '''Check for addFileToDB command from pipeline, add file to
+        database so it can be served to website, remove command from
+        output piped to website.'''
         if(len(pOut) < len(self.__COMMAND_PATTERNS["addFileToDB"])):
             return pOut
         
-        m = re.search(self.__COMMAND_PATTERNS["addFileToDB"],pOut)
-        if m is not None:
-            FileChecker.addFile(m.group("name"),
-                                m.group("path"),
-                                m.group("desc"))
-            StatusIO.write("Pipeline added file: <a href='%s' target='_blank'>%s</a> - %s" \
-                            % (m.group("path"),m.group("name"),m.group("desc")))
-            return pOut.replace(m.group(),"")
+        matches = re.finditer(self.__COMMAND_PATTERNS["addFileToDB"],pOut)
+        for m in matches:
+            if m is not None:
+                FileChecker.addFile(m.group("name"),
+                                    m.group("path"),
+                                    m.group("desc"))
+                StatusIO.write("Pipeline added file: <a href='%s' target='_blank'>%s</a> - %s" \
+                               % (m.group("path"),m.group("name"),m.group("desc")))
+            pOut = pOut.replace(m.group(),"")
+        return pOut
     
     def __writeToResults(self,pOut):
-        if(len(pOut) > len(self.__COMMAND_PATTERNS["writeToResults"])):
+        '''Check for writeToResults command from pipeline, append text passed in
+        the command to the file. This text will be viewable through the results
+        tab of the website once the pipeline is finished. So, this could really
+        be written to a little at a time, to create a complete file.'''
+        if(len(pOut) < len(self.__COMMAND_PATTERNS["writeToResults"])):
             return pOut
         
-        m = re.search(self.__COMMAND_PATTERNS["wrietToResults"])
-        if m is not None:
-            #write to results here
-            pass
+        matches = re.finditer(self.__COMMAND_PATTERNS["writeToResults"],pOut)
+        for m in matches:
+            if m is not None:
+                res = m.group("results")
+                f = open(PIPELINE_RESULTS_PATH,"a")
+                f.write(res)
+                f.close()
+                pOut = pOut.replace(m.group(),"")
+        return pOut
     
 if __name__ == "__main__":
     pass
