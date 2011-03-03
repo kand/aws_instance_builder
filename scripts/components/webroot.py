@@ -16,7 +16,6 @@ from controller import Controller,DIR_JS, \
                                 PIPELINE_RESULTS_FILE
 from serverio.statusIO import StatusIO,redirectExceptions
 from serverio.fileChecker import FileChecker
-from pipeline import Pipeline
 
 class Root(Directory):
     _q_exports = ["","css","js","output","getstatus","getfiles","console","files",
@@ -46,7 +45,7 @@ class Root(Directory):
             # using something like the following command, the file could even be
             #     a jinja2 template with variables to be written to here
             # this won't work completely, since variables in the tempalte could also
-            #     be variable. Maybe make a Controller().MSGS dict that allows inter
+            #    be variable. Maybe make a Controller().MSGS dict that allows inter
             #    thread communication
             resultsOutput = self.__j2env.get_template(PIPELINE_RESULTS_FILE).render()
             return self.__j2env.get_template("home.html").render(showResults=True,

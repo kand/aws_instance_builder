@@ -27,13 +27,13 @@ class FileChecker(object):
     __DB_TABLE_PIPELINEFILES = "pipelinefiles"
     
     @staticmethod
-    def addFile(name,path,description):
+    def addFile(name,fileName,description):
         '''Called through a command called by pipeline scripts. This will add a file
         path to the database that can then be served to the client.'''
         dba = DbAccess(DB_FILE)
         sql = "INSERT INTO " + FileChecker.__DB_TABLE_PIPELINEFILES \
-            + "(name,path,description) VALUES (:name,:path,:description)"
-        params = {"name":name,"path":path,"description":description}
+            + "(name,path,description) VALUES (:name,:fileName,:description)"
+        params = {"name":name,"fileName":"output/" + fileName,"description":description}
         
         try:
             dba.execute(sql,True,params)

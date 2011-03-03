@@ -10,17 +10,88 @@ from controller import Controller,cprint,DIR_FILEOUTPUT, \
 from serverio.statusIO import StatusIO,redirectExceptions
 from serverio.fileChecker import FileChecker
 
+class _pComm():
+    '''Class that stores regexes for various commands a pipeline can issue, as well
+    as the functions associated with them.'''
+    
+    __addFile = re.compile(r"pComm\.addFile\([\"\'](?P<name>.+)[\"\'],[\"\'](?P<fileName>.+)[\"\'],[\"\'](?P<desc>.+)[\"\']\)\n?")
+    __writeToFile = re.compile(r"pComm\.writeToFile\([\"\'](?P<fileName>.+)[\"\'],[\"\'](?P<text>.+)[\"\']\)\n?")
+    __writeToResults = re.compile(r"pComm\.writeToResults\([\"\'](?P<text>.+)[\"\']\)\n?")
+    
+    @staticmethod
+    def addFile(pOut):
+        '''Used to make a file that will be shown in output tab of website. If
+        the file does not exist, it will make a new one that can be written to.'''
+        matches = _pComm.__addFile.finditer(pOut)
+        for m in matches:
+            if m is not None:
+                FileChecker.addFile(m.group("name"),
+                                    m.group("fileName"),
+                                    m.group("desc"))
+                
+                if not os.path.isfile("output/" + m.group("fileName")):
+                    open(os.path.join(DIR_FILEOUTPUT,m.group("fileName")),"w").close()
+                
+                StatusIO.write("Pipeline added file: <a href='%s' target='_blank'>%s</a> - %s" \
+                               % ("output/" + m.group("fileName"),
+                                  m.group("name"),
+                                  m.group("desc")))
+            pOut = pOut.replace(m.group(),"")
+        return pOut
+        
+    @staticmethod
+    def writeToFile(pOut):
+        '''Can either use this function to write to an output file, or use the
+        pipeline to pipe to a file that was already created with addFile.
+        This command should be used with caution, if a pipeline is going to
+        produce a lot of output, it would be better for it to directly pipe
+        into the file.'''
+        matches = _pComm.__writeToFile.finditer(pOut)
+        open_dict = {}
+        for m in matches:
+            if m is not None:
+                abs_path = os.path.join(DIR_FILEOUTPUT,m.group("fileName")) 
+                
+                if not os.path.isfile(abs_path):
+                    StatusIO.write("[ERROR] File being written to with pComm.writeToFile cannot be found, did you forget to use addFile first?")
+                    continue
+                
+                if abs_path not in open_dict.keys():
+                    open_dict[abs_path] = open(abs_path,"a")
+                
+                #newlines show up escaped, also need to test for large output
+                open_dict[abs_path].write(m.group("text"))
+            pOut = pOut.replace(m.group(),"")
+        for f in open_dict:
+            f.close()
+        return pOut
+    
+    @staticmethod
+    def writeToResults(pOut):
+        '''Check for writeToResults command from pipeline, append text passed in
+        the command to the file. This text will be viewable through the results
+        tab of the website once the pipeline is finished. So, this could really
+        be written to a little at a time, to create a complete file.'''
+        matches = _pComm.__writeToResults.finditer(pOut)
+        f = open(PIPELINE_RESULTS_PATH,"a")
+        for m in matches:
+            if m is not None:
+                res = m.group("text")
+                f.write(res)
+                pOut = pOut.replace(m.group(),"")
+        f.close()
+        return pOut
+    
+    @staticmethod
+    def checkComm(pOut):
+        pOut = _pComm.addFile(pOut)
+        pOut = _pComm.writeToFile(pOut)
+        pOut = _pComm.writeToResults(pOut)
+        return pOut
+
 class Pipeline(Thread):
     '''Provides methods to run/use pipelines.'''
-    
-    __PIPELINE_FILE_NAME = "pipeline_script"
-    __COMMAND_PATTERNS = {
-        "addFileToDB":r"pComm\.addFileToDB\([\"\'](?P<name>.+)[\"\'],[\"\'](?P<path>.+)[\"\'],[\"\'](?P<desc>.+)[\"\']\)\n?",
-        "writeToResults":r"pComm\.writeToResults\([\"\'](?P<results>.+)[\"\']\)\n?"
-    }
-    
-    SIG_KEY = "pipeline_complete"
-    
+        
     def __init__(self,pipelineUrl):
         Thread.__init__(self)
         self.__pipelineUrl = pipelineUrl
@@ -62,67 +133,20 @@ class Pipeline(Thread):
         
         #redirect output to website
         while(process.poll() is None):
-            #If a special 'pcomm.addFileToDB("<name>","<path>","<description>")' 
-            #    command is echoed from a pipeline, a new file path entry will
-            #    be added to the database so that the file can then be served
-            #    to the client. This will only work for files placed in the
-            #    web/output directory. The <path> variable must also be a path
-            #    starting with 'output/'.
-            
-            #NEW ISSUE: too much output produces an extremely long string here
-            #    so, need to check length of string, if too long, just pipe it
-            #    straight away to file???
             pOut = process.stdout.read()
             pErr = process.stderr.read()
             
-            #might be able to search for both patterns at the sime time here
-            pOut = self.__addFileToDB(pOut)
-            pOut = self.__writeToResults(pOut)
+            #here, pipeline output is checked for commands from stdout
+            pOut = _pComm.checkComm(pOut)
 
             if(len(pOut) > 0):
                 StatusIO.write("[PIPELINE][COUT] {{ %s }}" % pOut)
             if(len(pErr) > 0):
                 StatusIO.write("[PIPELINE][CERR] {{ %s }}" % pErr)
+        
                 
-            StatusIO.write("Pipeline complete. Click here to view results: <a href='results'>results</a>")
-        
+        StatusIO.write("Pipeline complete. Click here to view results: <a href='results'>results</a>")
         Controller().SIG_KEYS[SIG_KEY_PIPELINE] = True
-        
-    def __addFileToDB(self,pOut):
-        '''Check for addFileToDB command from pipeline, add file to
-        database so it can be served to website, remove command from
-        output piped to website.'''
-        if(len(pOut) < len(self.__COMMAND_PATTERNS["addFileToDB"])):
-            return pOut
-        
-        matches = re.finditer(self.__COMMAND_PATTERNS["addFileToDB"],pOut)
-        for m in matches:
-            if m is not None:
-                FileChecker.addFile(m.group("name"),
-                                    m.group("path"),
-                                    m.group("desc"))
-                StatusIO.write("Pipeline added file: <a href='%s' target='_blank'>%s</a> - %s" \
-                               % (m.group("path"),m.group("name"),m.group("desc")))
-            pOut = pOut.replace(m.group(),"")
-        return pOut
-    
-    def __writeToResults(self,pOut):
-        '''Check for writeToResults command from pipeline, append text passed in
-        the command to the file. This text will be viewable through the results
-        tab of the website once the pipeline is finished. So, this could really
-        be written to a little at a time, to create a complete file.'''
-        if(len(pOut) < len(self.__COMMAND_PATTERNS["writeToResults"])):
-            return pOut
-        
-        matches = re.finditer(self.__COMMAND_PATTERNS["writeToResults"],pOut)
-        for m in matches:
-            if m is not None:
-                res = m.group("results")
-                f = open(PIPELINE_RESULTS_PATH,"a")
-                f.write(res)
-                f.close()
-                pOut = pOut.replace(m.group(),"")
-        return pOut
     
 if __name__ == "__main__":
     pass
