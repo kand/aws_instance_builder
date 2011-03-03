@@ -5,6 +5,7 @@ from threading import Thread
 
 from controller import Controller,cprint,DIR_FILEOUTPUT, \
                                         SIG_KEY_PIPELINE,\
+                                        PIPELINE_FILE_PATH,\
                                         PIPELINE_RESULTS_PATH
                                         
 from serverio.statusIO import StatusIO,redirectExceptions
@@ -59,11 +60,10 @@ class _pComm():
                 if abs_path not in open_dict.keys():
                     open_dict[abs_path] = open(abs_path,"a")
                 
-                #newlines show up escaped, also need to test for large output
-                open_dict[abs_path].write(m.group("text"))
+                open_dict[abs_path].write(m.group("text").decode("string_escape"))
             pOut = pOut.replace(m.group(),"")
-        for f in open_dict:
-            f.close()
+        for k in open_dict.keys():
+            open_dict[k].close()
         return pOut
     
     @staticmethod
@@ -76,7 +76,7 @@ class _pComm():
         f = open(PIPELINE_RESULTS_PATH,"a")
         for m in matches:
             if m is not None:
-                res = m.group("text")
+                res = m.group("text").decode("string_escape")
                 f.write(res)
                 pOut = pOut.replace(m.group(),"")
         f.close()
@@ -110,31 +110,31 @@ class Pipeline(Thread):
             StatusIO.write("[ERROR] Pipeline not found at url.")
             return
             
-        f = open(Pipeline.__PIPELINE_FILE_NAME,"w")
+        f = open(PIPELINE_FILE_PATH,"w")
         f.write(purl.read())
         f.close()
         purl.close()
         
-        if os.path.getsize(Pipeline.__PIPELINE_FILE_NAME) < 1:
+        if os.path.getsize(PIPELINE_FILE_PATH) < 1:
             StatusIO.write("[ERROR] Pipeline script was not properly downloaded.")
             return
             
         #make pipeline executable
-        command = ["chmod","+x",Pipeline.__PIPELINE_FILE_NAME]
+        command = ["chmod","+x",PIPELINE_FILE_PATH]
         process = subprocess.Popen(command)
         while(process.poll() is None): pass
         
         StatusIO.write("Pipeline now executable. Executing...")
         
         #execute pipeline script
-        command = ["sudo","./%s" % Pipeline.__PIPELINE_FILE_NAME]
+        command = ["sudo","%s" % PIPELINE_FILE_PATH]
         process = subprocess.Popen(command,stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         
         #redirect output to website
         while(process.poll() is None):
             pOut = process.stdout.read()
-            pErr = process.stderr.read()
+            pErr = process.stderr.read()    
             
             #here, pipeline output is checked for commands from stdout
             pOut = _pComm.checkComm(pOut)

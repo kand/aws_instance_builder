@@ -3,7 +3,7 @@ import os
 from sqlite3 import OperationalError
 from util.jsonObject import *
 from util.dbAccess import *
-from controller import DIR_FILEOUTPUT,DB_FILE
+from controller import cprint,DIR_FILEOUTPUT,DB_FILE
 
 class FileCheckResponse(JSONObject):
     def __init__(self,error="",files=[]):

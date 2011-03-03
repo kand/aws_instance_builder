@@ -1,10 +1,10 @@
-import os,traceback
+import sys,os,traceback
 
 from sqlite3 import OperationalError
 
 from util.jsonObject import *
 from util.dbAccess import *
-from controller import Controller,cprint,DB_FILE
+from controller import Controller,cprint,DB_FILE,ERRORS_FILE
 
 class StatusIOResponse(JSONObject):
     def __init__(self,error="",lastLine=-1,lines=""):
@@ -105,15 +105,22 @@ class StatusIO():
 
 def redirectExceptions(f):
     '''Function decorator to catch thread exceptions and print to main output.
-    This decorator should be put before all run() functions in threads that
-    are to be threaded through Controller. This makes error catching a lot
-    easier.'''
+    Will also create a file output. This decorator should be put before all 
+    run() functions in threads that are to be threaded through Controller. 
+    This makes error catching a lot easier.'''
     def wrap(self,*args,**kwargs):
         try:
            return f(self,*args,**kwargs)
         except:
-           cprint(traceback.print_exc())
-           StatusIO.write(traceback.print_exc())
+           ex = sys.exc_info()
+           trace = "".join(traceback.format_exception(ex[0],
+                                                      ex[1],
+                                                      ex[2]))
+           cprint(trace)
+           StatusIO.write(trace)
+           errf = open(ERRORS_FILE,"w")
+           errf.write(trace)
+           errf.close()
            return None
     return wrap
 
