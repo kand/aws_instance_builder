@@ -125,7 +125,14 @@ function shutdown(){
 	
 	$.ajax({
 		url:"shutdown",
-		type:"POST"
+		type:"POST",
+		dataType:"json",
+		success: function(data){
+			console.append("server did not shut down properly.<br/>");
+		},
+		error: function(){
+			console.append("server shut down.<br/>");
+		}
 	});
 }
 
