@@ -1,4 +1,4 @@
-import thread,os
+import thread,os,subprocess
 
 from util.dbAccess import *
 
@@ -60,6 +60,11 @@ class _Controller(object):
         for t in self.__threads:
             alive = alive and t.isAlive()
         return alive
+    
+    def shutdown(self):
+        '''Shuts down this instance.'''
+        process = subprocess.Popen(["sudo","shutdown","+0"])
+        while(process.poll() is None): pass
     
 _controller = _Controller()
     

@@ -19,7 +19,7 @@ from serverio.fileChecker import FileChecker
 
 class Root(Directory):
     _q_exports = ["","css","js","output","getstatus","getfiles","console","files",
-                  "results"]
+                  "results","shutdown"]
 
     js = StaticDirectory(DIR_JS)
     css = StaticDirectory(DIR_CSS)
@@ -52,6 +52,9 @@ class Root(Directory):
                                                                  results_active="active",
                                                                  results_output=resultsOutput)
         raise TraversalError()
+    
+    def shutdown(self):
+        Controller().shutdown()
 
     def getstatus(self):
         return StatusIO.read(get_response(),get_request().get_field("lastLine"))

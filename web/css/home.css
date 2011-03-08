@@ -61,7 +61,7 @@ div.content_section{
 #files_refresh{
 }
 
-#start_button,#stop_button,#files_refresh{
+#start_button,#stop_button,#files_refresh,#shutdown_button{
 	text-decoration:underline;
 	color:#0000ff;
 	cursor:pointer;

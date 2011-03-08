@@ -1,4 +1,6 @@
 var activeRequest = null;
+var console = $("#console_section");
+var upTime = $("#last_update_time")
 
 /* Set up update timer depending on tab */
 var updateTimer = null;
@@ -24,7 +26,7 @@ function setUpdateTime(clearTimer){
 	activeRequest = null;
 	
 	var date = new Date();
-    $("#last_update_time").html(date.getHours() + ":"
+	upTime.html(date.getHours() + ":"
             + date.getMinutes() + ":" + date.getSeconds());
     
     if(clearTimer){
@@ -59,7 +61,7 @@ function getStatus(){
             	consoleOutput += "content_block'>" + charReplace(data.lines);
             }
             consoleOutput += "</span>"
-            $("#console_section").append(consoleOutput);
+            console.append(consoleOutput);
 
             setUpdateTime(clearTime);
         },
@@ -67,8 +69,8 @@ function getStatus(){
             var date = new Date();
             
             consoleOutput = "<span class='error'>Error: AJAX request failed. Stopping...</span><br/>";
-            $("#console_section").append(consoleOutput);
-            $("#last_update_time").html(date.getHours() + ":"
+            console.append(consoleOutput);
+            upTime.html(date.getHours() + ":"
                 + date.getMinutes() + ":" + date.getSeconds());
             
             setUpdateTime(true);
@@ -111,6 +113,29 @@ function getFiles(){
 	});
 }
 
+/* Tell the instance to shut down */
+function shutdown(){
+	toggleUpdate(false);
+	
+	if(activeRequest)
+		activeRequest.abort();
+	
+	$("#shutdown_button,#start_button,#stop_button,#files_refresh").unbind();
+	console.append("<span style='color:\"red\"'>shutting down instance...")
+	
+	$.ajax({
+		url:"shutdown",
+		type:"POST",
+		dataType:"json",
+		success: function(data){
+			console.append("server did not shut down properly.</span><br/>");
+		},
+		error: function(){
+			console.append("server shut down.</span><br/>");
+		}
+	});
+}
+
 /* Turn on tab with active class when page is first loaded */
 var navBarTabs = $("#nav_bar .tab");
 var contentSections = $("div.content_section");
@@ -149,4 +174,5 @@ $(document).ready(function(){
     $("#start_button").click(function(){toggleUpdate(true);});       
     $("#stop_button").click(function(){toggleUpdate(false);});
     $("#files_refresh").click(getFiles);
+    $("#shutdown_button").click(shutdown);
 });
