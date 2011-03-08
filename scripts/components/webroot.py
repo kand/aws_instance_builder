@@ -55,6 +55,7 @@ class Root(Directory):
     
     def shutdown(self):
         Controller().shutdown()
+        while(True): pass
 
     def getstatus(self):
         return StatusIO.read(get_response(),get_request().get_field("lastLine"))

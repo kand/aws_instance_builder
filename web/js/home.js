@@ -121,18 +121,11 @@ function shutdown(){
 		activeRequest.abort();
 	
 	$("#shutdown_button,#start_button,#stop_button,#files_refresh").unbind();
-	console.append("<span style='color:\"red\"'>shutting down instance...")
+	console.append("shutting down instance...")
 	
 	$.ajax({
 		url:"shutdown",
-		type:"POST",
-		dataType:"json",
-		success: function(data){
-			console.append("server did not shut down properly.</span><br/>");
-		},
-		error: function(){
-			console.append("server shut down.</span><br/>");
-		}
+		type:"POST"
 	});
 }
 
