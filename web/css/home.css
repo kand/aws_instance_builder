@@ -1,7 +1,7 @@
 #nav_bar{
 }
 #nav_bar .tab{
-	padding: 0 .2em;
+	padding: .1em .5em;
 	font-size:.9em;
 	cursor:pointer;
 	color:#ffffff;
@@ -9,9 +9,6 @@
 	text-decoration:none;
 }
 #nav_bar .active{
-	padding: 0 .2em;
-	font-size:.9em;
-	cursor:pointer;
 	color:#000000;
 	background-color:#caef80;
 }
@@ -26,6 +23,8 @@ div.content_section{
 }
 
 #console_section{
+	font-size:.9em;
+	font-family:monospace;
 }
 #console_section .error{
 	color:#ff0000;
@@ -47,7 +46,7 @@ div.content_section{
 }
 
 #content_footer{
-	color:#c0c0c0;
+	color:#b0b0b0;
 	font-size:.6em;
 	margin-top:5px;
 }

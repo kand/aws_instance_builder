@@ -1,6 +1,6 @@
 var activeRequest = null;
-var console = $("#console_section");
-var upTime = $("#last_update_time")
+var console_section = $("#console_section");
+var upTime = $("#last_update_time");
 
 /* Set up update timer depending on tab */
 var updateTimer = null;
@@ -61,7 +61,7 @@ function getStatus(){
             	consoleOutput += "content_block'>" + charReplace(data.lines);
             }
             consoleOutput += "</span>"
-            console.append(consoleOutput);
+            console_section.append(consoleOutput);
 
             setUpdateTime(clearTime);
         },
@@ -69,7 +69,7 @@ function getStatus(){
             var date = new Date();
             
             consoleOutput = "<span class='error'>Error: AJAX request failed. Stopping...</span><br/>";
-            console.append(consoleOutput);
+            console_section.append(consoleOutput);
             upTime.html(date.getHours() + ":"
                 + date.getMinutes() + ":" + date.getSeconds());
             
@@ -121,17 +121,14 @@ function shutdown(){
 		activeRequest.abort();
 	
 	$("#shutdown_button,#start_button,#stop_button,#files_refresh").unbind();
-	console.append("shutting down instance...")
+	console_section.append("shutting down instance...")
 	
 	$.ajax({
 		url:"shutdown",
 		type:"POST",
 		dataType:"json",
 		success: function(data){
-			console.append("server did not shut down properly.<br/>");
-		},
-		error: function(){
-			console.append("server shut down.<br/>");
+			console_section.append("server shut down.<br/>");
 		}
 	});
 }

@@ -63,7 +63,7 @@ class _Controller(object):
     
     def shutdown(self):
         '''Shuts down this instance.'''
-        process = subprocess.Popen(["sudo","shutdown","-P","+0"])
+        subprocess.Popen(["sudo","shutdown","-P","+0"])
     
 _controller = _Controller()
     
